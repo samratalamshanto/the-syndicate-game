@@ -23,7 +23,6 @@ export const ChooseReplacementPrompt = ({ offered, onPick }: Props) => {
       size="sm"
     >
       <div className="grid gap-3 text-center">
-        <p className="font-display text-sm font-black text-brass">{t.common.fromDeck}</p>
         <div className="flex justify-center gap-3">
           {offered.map((card) => (
             <button

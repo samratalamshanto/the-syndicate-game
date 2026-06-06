@@ -111,6 +111,60 @@ describe('useGameStore profile', () => {
     expect(useGameStore.getState().spectatorMode).toBe('choose');
   });
 
+  it('does not enter spectator mode while a proven human card is waiting for replacement', () => {
+    useGameStore.getState().startGame();
+    const game = useGameStore.getState().game!;
+    const humanId = game.config.humanPlayerId;
+    const bot = game.players.find((player) => player.kind === 'bot')!;
+
+    useGameStore.setState({
+      game: {
+        ...game,
+        currentPlayerId: humanId,
+        deck: [
+          { id: 'replacement-1', role: 'thief', status: 'alive' },
+          { id: 'replacement-2', role: 'helper', status: 'alive' },
+        ],
+        players: game.players.map((player) => {
+          if (player.id === humanId) {
+            return {
+              ...player,
+              cards: [
+                { id: 'human-ceo', role: 'leader', status: 'alive' },
+              ],
+            };
+          }
+          if (player.id === bot.id) {
+            return {
+              ...player,
+              cards: [
+                { id: 'bot-spy', role: 'helper', status: 'alive' },
+              ],
+            };
+          }
+          return player;
+        }),
+      },
+      spectatorMode: null,
+    });
+
+    useGameStore.getState().act({
+      type: 'challenge',
+      actorId: humanId,
+      challengerId: bot.id,
+      claimedRole: 'leader',
+      originalAction: { type: 'tax', actorId: humanId },
+    });
+
+    expect(useGameStore.getState().game?.pendingChoice?.kind).toBe('replaceProvenCard');
+    expect(useGameStore.getState().spectatorMode).toBeNull();
+
+    useGameStore.getState().act({ type: 'chooseReplacementCard', playerId: humanId, cardId: 'replacement-1' });
+
+    expect(useGameStore.getState().spectatorMode).toBeNull();
+    expect(useGameStore.getState().game?.currentPlayerId).not.toBe(humanId);
+  });
+
   it('builds a detailed challenge event for the challenge popup', () => {
     useGameStore.getState().startGame();
     const game = useGameStore.getState().game!;
@@ -168,6 +222,7 @@ describe('useGameStore profile', () => {
     expect(createCardLossEvent(prev, next, { type: 'attack', actorId: 'player-1', targetId: 'player-2' })).toMatchObject({
       playerId: 'player-2',
       playerName: 'Bot A',
+      role: 'helper',
       actionType: 'attack',
       eliminated: false,
     });

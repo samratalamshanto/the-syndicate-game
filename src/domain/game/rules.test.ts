@@ -192,7 +192,9 @@ describe('game engine', () => {
 
     expect(afterChoice.pendingChoice).toBeNull();
     expect(afterChoice.players[0].cards.some((card) => card.id === 'd2')).toBe(true);
+    expect(afterChoice.deck.some((card) => card.id === 'c1')).toBe(true);
     expect(afterChoice.players[0].money).toBe(10);
+    expect(afterChoice.currentPlayerId).toBe('player-2');
   });
 
   it('can apply Minister attack after a failed challenge for one revealed and one hidden target loss', () => {

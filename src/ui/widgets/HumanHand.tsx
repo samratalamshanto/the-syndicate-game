@@ -26,7 +26,7 @@ export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', 
 
   const cards = player.cards ?? [];
   const isFelt = variant === 'felt';
-  const cardSize = isFelt ? 'xs' : isDesktop ? 'md' : 'sm';
+  const cardSize = isFelt ? 'md' : 'lg';
   const surfaceClass = isFelt ? 'felt-human-hand' : 'surface-glass';
   const seenCardIdsRef = useRef<Set<string>>(new Set());
   const freshCardIds = useMemo(

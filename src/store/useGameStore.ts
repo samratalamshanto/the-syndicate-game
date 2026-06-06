@@ -28,6 +28,7 @@ export type CardLossEvent = {
   id: string;
   playerId: string;
   playerName: string;
+  role: RoleId | null;
   actionType: GameAction['type'];
   eliminated: boolean;
 };
@@ -349,7 +350,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       payoffEvent: createPayoffEvent(game, next, action),
       flavorEvent: createFlavorEvent(game, next, action),
       gameSummary: next.phase === 'complete' && game.phase !== 'complete' ? createGameSummary(next) : get().gameSummary,
-      spectatorMode: shouldChooseSpectatorMode(game, next) ? 'choose' : get().spectatorMode,
+      spectatorMode: nextSpectatorMode(game, next, get().spectatorMode),
     });
   },
   chooseBotAction() {
@@ -480,7 +481,20 @@ const liveCardCount = (state: GameState, playerId: string) =>
 
 const shouldChooseSpectatorMode = (prev: GameState, next: GameState) => {
   const humanId = next.config.humanPlayerId;
-  return next.phase !== 'complete' && liveCardCount(prev, humanId) > 0 && liveCardCount(next, humanId) === 0;
+  return (
+    next.phase !== 'complete' &&
+    next.pendingChoice?.kind !== 'replaceProvenCard' &&
+    liveCardCount(prev, humanId) > 0 &&
+    liveCardCount(next, humanId) === 0
+  );
+};
+
+const nextSpectatorMode = (prev: GameState, next: GameState, current: SpectatorMode): SpectatorMode => {
+  const humanId = next.config.humanPlayerId;
+  if (liveCardCount(next, humanId) > 0) {
+    return null;
+  }
+  return shouldChooseSpectatorMode(prev, next) ? 'choose' : current;
 };
 
 const assignBotPersonas = (game: GameState): GameState => {
@@ -616,10 +630,12 @@ export const createCardLossEvent = (prev: GameState, next: GameState, action: Ga
     const prevPlayer = prev.players.find((player) => player.id === nextPlayer.id);
     if (!prevPlayer) continue;
     if (nextPlayer.cards.length >= prevPlayer.cards.length) continue;
+    const lostCard = prevPlayer.cards.find((card) => !nextPlayer.cards.some((nextCard) => nextCard.id === card.id));
     return {
       id: `loss-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       playerId: nextPlayer.id,
       playerName: nextPlayer.name,
+      role: lostCard?.role ?? null,
       actionType: action.type,
       eliminated: liveCardCount(prev, nextPlayer.id) > 0 && liveCardCount(next, nextPlayer.id) === 0,
     };

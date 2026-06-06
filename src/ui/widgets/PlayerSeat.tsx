@@ -93,7 +93,7 @@ export const PlayerSeat = ({
           >
             {isHuman ? <User size={isFelt ? 12 : 15} /> : initials}
             {player.isEliminated ? (
-              <span className="absolute -right-2 -top-2 rounded-full bg-danger px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+              <span className="absolute -right-2 -top-2 rounded-full bg-alert px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
                 out
               </span>
             ) : null}
@@ -138,7 +138,7 @@ export const PlayerSeat = ({
       </div>
 
       {canSelect ? (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-danger px-2 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-chipDanger">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-alert px-2 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-chipDanger">
           <Target size={11} />
           {t.common.chooseTarget}
         </div>

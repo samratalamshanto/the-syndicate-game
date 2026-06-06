@@ -26,9 +26,9 @@ export const EliminatedPrompt = ({ onWatch, onSameSettings, onChangeSettings }: 
           <button
             type="button"
             onClick={onWatch}
-            className="group grid min-h-24 gap-2 rounded-xl border border-emerald-400/45 bg-emerald-500/15 px-4 py-3 text-left transition hover:border-emerald-300 hover:bg-emerald-500/25 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            className="group grid min-h-24 gap-2 rounded-xl border border-success/40 bg-success/15 px-4 py-3 text-left text-success transition hover:border-success focus:outline-none focus:ring-2 focus:ring-success"
           >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-400 text-night">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-success text-night">
               <Eye size={17} />
             </span>
             <span>
@@ -39,9 +39,9 @@ export const EliminatedPrompt = ({ onWatch, onSameSettings, onChangeSettings }: 
           <button
             type="button"
             onClick={onSameSettings}
-            className="group grid min-h-24 gap-2 rounded-xl border border-brass/60 bg-brass/15 px-4 py-3 text-left transition hover:border-brass hover:bg-brass/25 focus:outline-none focus:ring-2 focus:ring-brass"
+            className="bg-accent-soft border-accent-soft group grid min-h-24 gap-2 rounded-xl border px-4 py-3 text-left text-accent transition hover:border-accent focus:outline-none focus:ring-2 focus:ring-brass"
           >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brass text-night">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-night">
               <RefreshCcw size={17} />
             </span>
             <span>

@@ -83,11 +83,14 @@ type Translation = {
     powerClaimed: string;
     cardLoss: string;
     cardLossMoment: string;
+    cardLossMomentRole: string;
     challengeDuelLine: string;
     challengeTargetLine: string;
     challengeNoTargetLine: string;
     challengeResultLiar: string;
     challengeResultTruth: string;
+    challengeOneLineLiar: string;
+    challengeOneLineTruth: string;
     challengeLoserLine: string;
     react: string;
     reactPrompt: string;
@@ -281,11 +284,14 @@ const dailyEn: Translation = {
     powerClaimed: 'Power claimed',
     cardLoss: 'Card loss',
     cardLossMoment: '{player} lost a card',
+    cardLossMomentRole: '{player} lost {role}',
     challengeDuelLine: '{challenger} challenged {actor}',
     challengeTargetLine: '{action} against {target}',
     challengeNoTargetLine: '{action}',
     challengeResultLiar: "{actor}'s {role} claim was false.",
     challengeResultTruth: "{actor}'s {role} claim was true.",
+    challengeOneLineLiar: '{challenger} caught {actor} bluffing {role}.',
+    challengeOneLineTruth: "{challenger} doubted {actor}'s {role}. {challenger} was wrong.",
     challengeLoserLine: '{player} loses a card',
     react: 'React',
     reactPrompt: 'How do you react?',
@@ -572,11 +578,17 @@ const dailyBn: Translation = {
     cardLoss: 'কার্ড হারাবে',
     // TODO: native bn review before merge.
     cardLossMoment: '{player} একটি কার্ড হারিয়েছে',
+    // TODO: native bn review before merge.
+    cardLossMomentRole: '{player} {role} হারিয়েছে',
     challengeDuelLine: '{challenger} {actor} কে চ্যালেঞ্জ করেছে',
     challengeTargetLine: '{target} এর বিরুদ্ধে {action}',
     challengeNoTargetLine: '{action}',
     challengeResultLiar: '{actor} এর {role} দাবি মিথ্যা ছিল।',
     challengeResultTruth: '{actor} এর {role} দাবি সত্য ছিল।',
+    // TODO: native bn review before merge.
+    challengeOneLineLiar: '{challenger} {actor}-এর {role} মিথ্যা ধরেছে।',
+    // TODO: native bn review before merge.
+    challengeOneLineTruth: '{challenger} {actor}-এর {role} সন্দেহ করেছে। {challenger} ভুল ছিল।',
     challengeLoserLine: '{player} একটি কার্ড হারাবে',
     react: 'প্রতিক্রিয়া',
     reactPrompt: 'কীভাবে প্রতিক্রিয়া দেবেন?',
@@ -681,7 +693,7 @@ const dailyBn: Translation = {
       challenge: 'চ্যালেঞ্জ?',
       block: 'ব্লক?',
       pass: 'পাস?',
-      pickAction: 'Pick your move / আপনার চাল বেছে নিন',
+      pickAction: 'আপনার চাল বেছে নিন',
       chooseTarget: 'টার্গেট বেছে নিন',
       counterChallenge: 'কাউন্টার-চ্যালেঞ্জ?',
     },

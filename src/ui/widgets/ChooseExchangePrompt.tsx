@@ -78,11 +78,11 @@ export const ChooseExchangePrompt = ({ alive, offered, onConfirm }: Props) => {
       <div className="grid gap-3">
         <div className="grid gap-3">
           <div className="rounded-xl border border-token-soft px-3 py-3">
-            <p className="mb-2 font-display text-sm font-black">{t.common.yourHand}</p>
+            <p className="text-app-muted mb-2 text-xs">{t.common.yourHand}</p>
             <div className="flex flex-wrap justify-center gap-3">{alive.map(renderCard)}</div>
           </div>
           <div className="rounded-xl border border-brass/60 px-3 py-3">
-            <p className="mb-2 font-display text-sm font-black text-brass">{t.common.fromDeck}</p>
+            <p className="text-app-muted mb-2 text-xs">{t.common.fromDeck}</p>
             <div className="flex flex-wrap justify-center gap-3">{offered.map(renderCard)}</div>
           </div>
         </div>

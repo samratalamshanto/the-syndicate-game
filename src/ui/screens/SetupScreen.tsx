@@ -43,7 +43,7 @@ export const SetupScreen = () => {
       <div className="grid gap-6">
         <div className="grid gap-4">
           <h2 className="font-display text-5xl font-black leading-[1.05] tracking-wide text-app sm:text-6xl">{t.gameTitle}</h2>
-          <p className="text-app-muted mt-3 max-w-md text-base">{t.subtitle}</p>
+          <p className="text-app-muted mt-3 max-w-xl text-base lg:whitespace-nowrap">{t.subtitle}</p>
           <button
             type="button"
             onClick={() => setGuideOpen(true)}
@@ -114,7 +114,7 @@ export const SetupScreen = () => {
                         resetProfile();
                         setConfirmResetOpen(false);
                       }}
-                      className="min-h-11 rounded-full bg-danger px-4 py-2 text-sm font-black"
+                      className="min-h-11 rounded-full bg-alert px-4 py-2 text-sm font-black"
                     >
                       {t.common.resetProfile}
                     </button>

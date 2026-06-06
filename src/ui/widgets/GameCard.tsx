@@ -62,8 +62,8 @@ export const GameCard = (props: Props) => {
     const copy = t.roles[props.role];
     return (
       <div className={`${frameClass} surface-strong overflow-hidden border border-token grayscale`} style={frameStyle}>
-        <div className="absolute inset-x-0 top-0 h-1 bg-danger" />
-        <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-danger px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+        <div className="absolute inset-x-0 top-0 h-1 bg-alert" />
+        <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-alert px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
           {t.common.revealed}
         </span>
         <div className="absolute inset-0 grid grid-rows-[1fr_auto] gap-1 p-2 text-center">
@@ -79,6 +79,22 @@ export const GameCard = (props: Props) => {
   }
 
   const copy = t.roles[props.role];
+  if (props.yours) {
+    return (
+      <div className={`${frameClass} surface-strong overflow-hidden border border-token after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-brass`} style={frameStyle}>
+        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${roleColors[props.role]}`} />
+        <div className="absolute inset-1.5 bottom-7 overflow-hidden rounded-md border border-token-soft bg-[var(--surface-muted)]">
+          <RolePortrait role={props.role} fill />
+        </div>
+        <div className="absolute inset-x-1.5 bottom-1.5 z-10 rounded-md bg-[var(--surface-muted)] px-1.5 py-1">
+          <p className="text-center font-display text-xs font-black leading-tight text-app sm:text-sm">
+            {copy.name}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${frameClass} surface-strong overflow-hidden border border-token ${props.yours ? 'after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-brass' : ''}`} style={frameStyle}>
       <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${roleColors[props.role]}`} />

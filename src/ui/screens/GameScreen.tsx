@@ -1,15 +1,12 @@
-import { BookOpen, Clock3, Eye, ScrollText, Sparkles, Trophy } from 'lucide-react';
+import { BookOpen, Clock3, Eye, ScrollText, Sparkles, Trophy, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getPlayerView, requiredRoleForAction } from '../../domain/game/engine';
 import type { ActionType, GameAction, PrimaryGameAction, RoleId } from '../../domain/game/types';
 import { formatMessage, translations } from '../../i18n/translations';
 import type { BotReaction } from '../../ports/BotStrategy';
 import { useGameStore } from '../../store/useGameStore';
-import { selectActiveActor, selectLastEventLine, selectNextPlayerLine } from '../../store/selectors';
 import { roleColors } from '../../config/branding';
 import { getPersona } from '../../config/botPersonas';
-import { ActionCard } from '../widgets/ActionCard';
-import { ActionPanel } from '../widgets/ActionPanel';
 import { CardLossMoment } from '../widgets/CardLossMoment';
 import { ChallengeBanner } from '../widgets/ChallengeBanner';
 import { ChooseExchangePrompt } from '../widgets/ChooseExchangePrompt';
@@ -20,7 +17,6 @@ import { EliminatedPrompt } from '../widgets/EliminatedPrompt';
 import { GuidePanel } from '../widgets/GuidePanel';
 import { HumanHand } from '../widgets/HumanHand';
 import { Modal } from '../widgets/Modal';
-import { NowStrip } from '../widgets/NowStrip';
 import { PayoffBanner } from '../widgets/PayoffBanner';
 import { PlayerSeat } from '../widgets/PlayerSeat';
 import { ReactPrompt } from '../widgets/ReactPrompt';
@@ -51,12 +47,21 @@ const actionCosts: Record<ActionType, number> = {
   attack: 3,
   eliminate: 7,
 };
+const compactActionText = (type: ActionType, t: (typeof translations)['en']) => {
+  if (type === 'income') return { title: t.actions.income, note: '+1 · safe' };
+  if (type === 'fundRaise') return { title: t.actions.fundRaise.includes(':') ? t.actions.fundRaise.split(':').at(-1)?.trim() ?? t.actions.fundRaise : t.actions.fundRaise, note: '+2 · blockable' };
+  if (type === 'tax') return { title: t.roles.leader.name, note: '+3' };
+  if (type === 'exchange') return { title: t.roles.helper.name, note: 'exchange cards' };
+  if (type === 'steal') return { title: t.roles.thief.name, note: 'steal 2' };
+  if (type === 'attack') return { title: t.roles.officer.name, note: 'pay 3' };
+  return { title: t.actions.eliminate, note: 'pay 7' };
+};
 export const BOT_TIMING = {
-  thinkingMs: 1000,
-  announcingMs: 800,
-  resolvingMs: 500,
+  thinkingMs: 1400,
+  announcingMs: 1200,
+  resolvingMs: 900,
   reactWindowMs: 6000,
-  flavorMs: 1400,
+  flavorMs: 1800,
 } as const;
 
 const blockRolesForAction = (action: GameAction): RoleId[] => {
@@ -170,8 +175,6 @@ export const GameScreen = () => {
   const [handFlash, setHandFlash] = useState(false);
   const [shakingTargetId, setShakingTargetId] = useState<string | null>(null);
   const [copiedSummary, setCopiedSummary] = useState(false);
-  const [nowMs, setNowMs] = useState(Date.now());
-  const [reactionEndsAt, setReactionEndsAt] = useState<number | null>(null);
   const bankRef = useRef<HTMLDivElement | null>(null);
   const coinRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const t = translations[language];
@@ -301,27 +304,10 @@ export const GameScreen = () => {
   }, [act, chooseBotCounterChallenge, game]);
 
   useEffect(() => {
-    if (!payoffEvent) return undefined;
-    const timer = window.setTimeout(() => clearPayoffEvent(payoffEvent.id), payoffEvent.type === 'doubleShot' ? 1900 : 1500);
-    return () => window.clearTimeout(timer);
-  }, [clearPayoffEvent, payoffEvent]);
-
-  useEffect(() => {
     if (!flavorEvent) return undefined;
     const timer = window.setTimeout(() => clearFlavorEvent(flavorEvent.id), BOT_TIMING.flavorMs);
     return () => window.clearTimeout(timer);
   }, [clearFlavorEvent, flavorEvent]);
-
-  useEffect(() => {
-    if (botTurn.phase !== 'awaitReaction' || reactWindowMs <= 0) {
-      setReactionEndsAt(null);
-      return undefined;
-    }
-    setNowMs(Date.now());
-    setReactionEndsAt(Date.now() + reactWindowMs);
-    const interval = window.setInterval(() => setNowMs(Date.now()), 250);
-    return () => window.clearInterval(interval);
-  }, [botTurn.phase, reactWindowMs]);
 
   const human = useMemo(
     () => game?.players.find((p) => p.id === game.config.humanPlayerId) ?? null,
@@ -544,24 +530,6 @@ export const GameScreen = () => {
     humanPendingChoice?.kind === 'revealCard'
       ? formatRevealChoiceDetail(game, humanPendingChoice.source, t)
       : '';
-  const activeActor = selectActiveActor(game, view.players);
-  const lastEventLine = selectLastEventLine(game, t);
-  const nextPlayerLine = selectNextPlayerLine(game, t);
-  const reactSecondsLeft =
-    reactPromptActive && reactionEndsAt ? Math.max(0, Math.ceil((reactionEndsAt - nowMs) / 1000)) : undefined;
-  const requiredAction = counterChallengeChoice
-    ? { label: t.common.required.counterChallenge }
-    : reactPromptActive
-      ? {
-          label: `${t.common.required.challenge} / ${t.common.required.block}`,
-          secondsLeft: reactSecondsLeft,
-          urgent: (reactSecondsLeft ?? 99) <= Math.ceil(Math.max(1, reactTimerSeconds) * 0.3),
-        }
-      : pendingAction
-        ? { label: t.common.required.chooseTarget }
-        : isHumanTurn
-          ? { label: t.common.required.pickAction }
-          : null;
   const timerLabel =
     reactTimerSeconds === 0
       ? t.common.timerOff
@@ -570,15 +538,103 @@ export const GameScreen = () => {
     const seconds = Math.max(0, Math.min(60, Number(value) || 0));
     setReactTimerSeconds(seconds);
   };
+  const actionDecisionPad = isHumanTurn ? (
+    <div className="action-pad mx-auto w-full max-w-5xl rounded-2xl border px-3 py-3 sm:px-4 sm:py-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.common.yourTurn}</p>
+          <h3 className="font-display text-base font-black leading-tight text-app sm:text-lg">
+            {pendingAction ? t.common.chooseTarget : t.common.actionPanelTitle}
+          </h3>
+          <p className="text-app-muted text-xs sm:text-sm">
+            {pendingAction ? `${t.actions[pendingAction]} · ${t.common.chooseTarget}` : t.common.chooseAction}
+          </p>
+        </div>
+        {pendingAction ? (
+          <button
+            type="button"
+            onClick={() => setPendingAction(null)}
+            className="surface-control grid h-10 w-10 shrink-0 place-items-center rounded-full border"
+            aria-label={t.common.cancel}
+          >
+            <X size={16} />
+          </button>
+        ) : null}
+      </div>
+
+      {pendingAction ? (
+        <div className="rounded-xl border border-ember/55 bg-ember/15 px-3 py-2 text-sm font-black text-ember">
+          {t.common.chooseTarget}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-7">
+          {actionOrder.map((type) => {
+            const role = requiredRoleForAction(type);
+            const disabled = disabledByCost[type] ?? false;
+            const label = compactActionText(type, t);
+            return (
+              <button
+                key={type}
+                type="button"
+                disabled={disabled}
+                aria-label={t.actions[type]}
+                onClick={() => chooseAction(type)}
+                className={`action-choice min-h-[4.25rem] rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-brass ${
+                  disabled ? 'cursor-not-allowed opacity-60' : ''
+                }`}
+              >
+                <span className="block truncate font-display text-base font-black leading-tight text-app sm:text-lg">
+                  {label.title}
+                </span>
+                <span className={`mt-1 block truncate text-xs font-black ${disabled ? 'text-ember' : role ? 'text-brass' : 'text-success'}`}>
+                  {disabled ? formatMessage(t.common.needCoins, { n: unaffordableBy(type) }) : label.note}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  ) : null;
+  const reactionDecisionPad = reactPromptActive && botTurn.action ? (
+    <ReactPrompt
+      action={botTurn.action}
+      actorName={botAnnouncementActor}
+      timeoutMs={reactWindowMs}
+      humanRoles={humanRoles}
+      onReact={reactToBot}
+    />
+  ) : null;
+  const counterChallengeDecisionPad = counterChallengeChoice ? (
+    <div className="action-pad mx-auto w-full max-w-3xl rounded-2xl border px-3 py-3 sm:px-4 sm:py-4">
+      <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.common.react}</p>
+        <h3 className="font-display text-lg font-black leading-tight text-app sm:text-xl">{t.common.counterChallengePrompt}</h3>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => chooseCounterChallenge(true)}
+          className="min-h-14 rounded-xl bg-alert px-4 py-3 font-display text-sm font-black text-white shadow-chipDanger transition hover:brightness-105 sm:text-base"
+        >
+          {t.common.challengeAction}
+        </button>
+        <button
+          type="button"
+          onClick={() => chooseCounterChallenge(false)}
+          className="action-choice min-h-14 rounded-xl border px-4 py-3 font-display text-sm font-black text-app transition sm:text-base"
+        >
+          {t.common.pass}
+        </button>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <section className="relative grid flex-1 gap-3 py-3 sm:gap-4 sm:py-4">
-      <NowStrip actor={activeActor} lastEvent={lastEventLine} requiredAction={requiredAction} fallback={nextPlayerLine} />
       {/* === TABLE === */}
       <div
-        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} px-3 py-4 sm:rounded-[2.25rem] sm:px-6 sm:py-8 ${
-          isHumanTurn || reactPromptActive ? 'pb-[8rem] sm:pb-[9rem]' : ''
-        } ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
+        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} px-3 py-4 sm:rounded-[2.25rem] sm:px-6 sm:py-8 ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
       >
         <div className="felt-atmosphere" aria-hidden="true" />
         {/* Floating helpers */}
@@ -737,17 +793,21 @@ export const GameScreen = () => {
             ))}
           </div>
 
-          <div className="absolute left-1/2 top-1/2 w-[min(37rem,43vw)] -translate-x-1/2 -translate-y-1/2">
-            <TableCenter
-              prompt={tablePrompt}
-              subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
-              highlight={highlight}
-              announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
-              bankRef={isDesktop ? bankRef : undefined}
-            />
+          <div className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+            actionDecisionPad || reactionDecisionPad || counterChallengeDecisionPad ? 'top-[43%] w-[min(58rem,76vw)]' : 'top-1/2 w-[min(37rem,43vw)]'
+          }`}>
+            {actionDecisionPad ?? reactionDecisionPad ?? counterChallengeDecisionPad ?? (
+              <TableCenter
+                prompt={tablePrompt}
+                subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
+                highlight={highlight}
+                announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
+                bankRef={isDesktop ? bankRef : undefined}
+              />
+            )}
           </div>
 
-          <div className="absolute bottom-0 left-1/2 w-[min(30rem,48vw)] -translate-x-1/2">
+          <div className="absolute bottom-8 left-1/2 w-[min(30rem,48vw)] -translate-x-1/2">
             <HumanHand
               player={humanView}
               isActive={isHumanTurn}
@@ -765,13 +825,15 @@ export const GameScreen = () => {
 
         {!isDesktop ? (
         <div className="relative z-10 mt-2">
-          <TableCenter
-            prompt={tablePrompt}
-            subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
-            highlight={highlight}
-            announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
-            bankRef={!isDesktop ? bankRef : undefined}
-          />
+          {actionDecisionPad ?? reactionDecisionPad ?? counterChallengeDecisionPad ?? (
+            <TableCenter
+              prompt={tablePrompt}
+              subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
+              highlight={highlight}
+              announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
+              bankRef={!isDesktop ? bankRef : undefined}
+            />
+          )}
         </div>
         ) : null}
 
@@ -877,69 +939,7 @@ export const GameScreen = () => {
       </div>
 
       {/* === ACTION HAND === */}
-      {counterChallengeChoice ? (
-        <div className="surface-strong sticky bottom-0 z-40 -mx-1 rounded-2xl border px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-card">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.common.react}</p>
-              <h3 className="font-display text-base font-black sm:text-lg">{t.common.counterChallengePrompt}</h3>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => chooseCounterChallenge(true)}
-                className="min-h-11 flex-1 rounded-xl bg-danger px-4 py-2 font-display text-sm font-black shadow-chipDanger sm:flex-none"
-              >
-                {t.common.challengeAction}
-              </button>
-              <button
-                type="button"
-                onClick={() => chooseCounterChallenge(false)}
-                className="surface-control min-h-11 flex-1 rounded-xl border px-4 py-2 font-display text-sm font-black sm:flex-none"
-              >
-                {t.common.pass}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : reactPromptActive && botTurn.action ? (
-        <div className="sticky bottom-0 z-40 -mx-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <ReactPrompt
-            action={botTurn.action}
-            actorName={botAnnouncementActor}
-            timeoutMs={reactWindowMs}
-            humanRoles={humanRoles}
-            onReact={reactToBot}
-          />
-        </div>
-      ) : isHumanTurn ? (
-        <ActionPanel
-          eyebrow={t.common.yourTurn}
-          title={pendingAction ? t.common.chooseTarget : t.common.actionPanelTitle}
-          detail={pendingAction ? `${t.actions[pendingAction]} · ${t.common.chooseTarget}` : t.common.chooseAction}
-          onCancel={pendingAction ? () => setPendingAction(null) : undefined}
-        >
-          {pendingAction ? (
-            <div className="grid gap-2 rounded-xl border border-ember/55 bg-ember/15 px-3 py-2 text-sm font-black text-ember">
-              {t.common.chooseTarget}
-            </div>
-          ) : (
-            <div className="pb-1">
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
-                {actionOrder.map((type) => (
-                  <ActionCard
-                    key={type}
-                    type={type}
-                    disabled={disabledByCost[type] ?? false}
-                    unaffordableBy={unaffordableBy(type)}
-                    onSelect={chooseAction}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </ActionPanel>
-      ) : !isComplete ? (
+      {!counterChallengeChoice && !reactPromptActive && !isHumanTurn && !isComplete ? (
         <div className="surface-strong rounded-xl border px-4 py-2 text-center font-display text-sm font-black">
           {current.name} {t.common.thinking}...
           <span className="sr-only">Bot 1 thinking</span>

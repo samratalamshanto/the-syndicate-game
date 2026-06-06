@@ -22,8 +22,8 @@
   --inverse-on: #faf6ec;
   --accent: #b8821e;
   --accent-strong: #b8821e;
-  --danger: #c93838;
-  --danger-on: #ffffff;
+  --alert: #c93838;
+  --alert-on: #ffffff;
   --success: #2a7f5a;
   --warn: #d18b2a;
   --on-dark: #f5f0e3;
@@ -46,8 +46,8 @@
   --inverse-on: #1a1d24;
   --accent: #d4a548;
   --accent-strong: #d4a548;
-  --danger: #e85a4f;
-  --danger-on: #ffffff;
+  --alert: #e85a4f;
+  --alert-on: #ffffff;
   --success: #4ab287;
   --warn: #e7a13a;
   --on-dark: #f5f0e3;
@@ -114,6 +114,33 @@ select {
   background: var(--surface-muted);
 }
 
+.action-pad {
+  border-color: var(--accent);
+  background: var(--surface);
+  color: var(--on-app);
+  box-shadow:
+    inset 0 0 0 1px var(--line-soft),
+    0 16px 42px rgba(26, 35, 50, 0.14);
+}
+
+.dark .action-pad {
+  background: var(--surface-muted);
+  box-shadow:
+    inset 0 0 0 1px var(--line-soft),
+    0 18px 46px rgba(0, 0, 0, 0.38);
+}
+
+.action-choice {
+  border-color: var(--line);
+  background: var(--surface-muted);
+  color: var(--on-app);
+}
+
+.action-choice:hover {
+  border-color: var(--accent);
+  background: var(--control-hover);
+}
+
 .border-token {
   border-color: var(--line);
 }
@@ -131,12 +158,20 @@ select {
   color: var(--accent);
 }
 
-.text-danger {
-  color: var(--danger);
+.text-alert {
+  color: var(--alert);
 }
 
 .text-success {
   color: var(--success);
+}
+
+.bg-accent-soft {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.border-accent-soft {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .bg-accent {
@@ -148,9 +183,9 @@ select {
   border-color: var(--accent);
 }
 
-.bg-danger {
-  background: var(--danger);
-  color: var(--danger-on);
+.bg-alert {
+  background: var(--alert);
+  color: var(--alert-on);
 }
 
 .ring-accent {
@@ -191,13 +226,13 @@ select {
 }
 
 .table-stage {
-  min-height: clamp(25rem, 46vw, 32rem);
+  min-height: clamp(31rem, 52vw, 40rem);
 }
 
 .table-stage::before {
   content: '';
   position: absolute;
-  inset: clamp(3.5rem, 6vw, 4.5rem) clamp(5rem, 10vw, 7rem) clamp(5.5rem, 9vw, 6.5rem);
+  inset: clamp(4rem, 6vw, 5rem) clamp(5rem, 10vw, 7rem) clamp(8rem, 12vw, 9.5rem);
   border-radius: 999px;
   background: #dfe9d8;
   box-shadow:
@@ -268,6 +303,7 @@ select {
 
 /* ---------- Card surfaces ---------- */
 .card-face {
+  /* Intentional: gives face cards a subtle printed-card highlight, not page atmosphere. */
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.35) 100%),
     radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.15), transparent 60%);
@@ -330,6 +366,7 @@ select {
 
 /* ---------- Coin disc ---------- */
 .coin-disc {
+  /* Intentional: models a small metallic coin face. */
   background:
     radial-gradient(circle at 35% 30%, #ffe9a8 0%, #d6a651 35%, #9a6f2c 75%, #6a4a1a 100%);
   box-shadow:
@@ -380,15 +417,14 @@ select {
   animation: sheetUp 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+.banner-alert-pop {
+  animation: sheetUp 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both, bannerAlertPop 320ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms both;
+}
+
 .felt-atmosphere {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255, 240, 200, 0.06), transparent 60%),
-    radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255, 240, 200, 0.04), transparent 60%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255, 240, 200, 0.05), transparent 60%);
-  background-size: 200% 200%, 220% 220%, 180% 180%;
   animation: smokeDrift 36s ease-in-out infinite alternate;
   mix-blend-mode: screen;
   z-index: 1;
@@ -410,6 +446,12 @@ select {
     transform: translate(var(--coin-to-x), var(--coin-to-y)) scale(1);
     opacity: 0;
   }
+}
+
+@keyframes bannerAlertPop {
+  0% { transform: scale(1); }
+  18% { transform: scale(1.018); }
+  100% { transform: scale(1); }
 }
 
 @keyframes thinkingDot {
@@ -465,6 +507,7 @@ select {
 
 /* ---------- Spotlight underneath active seat ---------- */
 .seat-spotlight {
+  /* Intentional: local active-seat focus, not a page background effect. */
   background:
     radial-gradient(ellipse 80% 100% at 50% 0%,
       rgba(214, 166, 81, 0.55) 0%,
@@ -492,6 +535,7 @@ select {
   content: '';
   position: absolute;
   inset: 0;
+  /* Intentional: edge vignette for framed reveal/table moments. */
   background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.55) 100%);
   pointer-events: none;
   border-radius: inherit;

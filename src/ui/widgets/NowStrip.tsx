@@ -2,6 +2,7 @@ import { Clock3 } from 'lucide-react';
 import type { PlayerSummaryView } from '../../domain/game/types';
 import { formatMessage, translations } from '../../i18n/translations';
 import { useGameStore } from '../../store/useGameStore';
+import { RolePortrait } from './RolePortrait';
 
 type Props = {
   actor: PlayerSummaryView | null;
@@ -17,13 +18,14 @@ type Props = {
 export const NowStrip = ({ actor, lastEvent, requiredAction = null, fallback }: Props) => {
   const language = useGameStore((state) => state.language);
   const t = translations[language];
+  const visibleRole = actor?.cards?.find((card) => card.status === 'alive')?.role ?? actor?.revealedRoles[0] ?? null;
   const initials = actor?.name.slice(0, 2).toUpperCase() ?? '--';
 
   return (
     <section className="surface-strong grid gap-3 rounded-2xl border border-token px-3 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:px-4">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-brass bg-[var(--surface)] font-display text-sm font-black text-brass">
-          {initials}
+        <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-brass bg-[var(--surface)] font-display text-sm font-black text-brass">
+          {visibleRole ? <RolePortrait role={visibleRole} fill /> : initials}
         </span>
         <div className="min-w-0">
           <p className="font-display text-lg font-black leading-tight">{actor?.name ?? t.common.table}</p>
