@@ -94,7 +94,7 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
     .split('.')
     .map((point) => point.trim())
     .filter(Boolean)
-    .slice(0, 2);
+    .slice(0, isDesktop ? 2 : 1);
 
   return (
     <button
@@ -102,9 +102,9 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
       disabled={disabled}
       onClick={() => onSelect(type)}
       aria-label={t.actions[type]}
-      className="group relative flex aspect-[2/3] min-w-[116px] w-[34vw] max-w-[142px] flex-col overflow-hidden rounded-xl border border-brass/55 bg-gradient-to-b from-[#121922] to-[#05080c] text-paper shadow-card transition-all duration-200 hover:-translate-y-2 hover:border-brass hover:shadow-gold focus:outline-none focus:ring-2 focus:ring-brass disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:-translate-y-0 sm:w-36"
+      className="group relative flex h-32 min-w-[106px] w-[32vw] max-w-[124px] flex-col overflow-hidden rounded-xl border border-brass/55 bg-gradient-to-b from-[#121922] to-[#05080c] text-paper shadow-card transition-all duration-200 hover:-translate-y-2 hover:border-brass hover:shadow-gold focus:outline-none focus:ring-2 focus:ring-brass disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:-translate-y-0 sm:aspect-[2/3] sm:h-auto sm:w-36 sm:max-w-[142px]"
     >
-      <div className={`relative h-11 sm:h-14 bg-gradient-to-br ${headerGradient}`}>
+      <div className={`relative h-9 shrink-0 sm:h-14 bg-gradient-to-br ${headerGradient}`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.35),transparent_55%)]" />
         <div className="absolute inset-0 grid place-items-center">
           <Icon size={isDesktop ? 22 : 18} className="text-white drop-shadow" />
@@ -120,10 +120,10 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-between px-2.5 py-2 text-left">
+      <div className="flex min-h-0 flex-1 flex-col justify-between px-2 py-1.5 text-left sm:px-2.5 sm:py-2">
         <div>
-          <p className="font-display text-[12px] font-black leading-tight text-paper sm:text-[13px]">{t.actions[type]}</p>
-          <ul className="mt-1 grid gap-0.5 text-[10px] font-semibold leading-snug text-paper/85">
+          <p className="line-clamp-2 font-display text-[11px] font-black leading-tight text-paper sm:text-[13px]">{t.actions[type]}</p>
+          <ul className="mt-1 grid gap-0.5 text-[9px] font-semibold leading-tight text-paper/85 sm:text-[10px] sm:leading-snug">
             {helpPoints.map((point) => (
               <li key={point} className="flex gap-1">
                 <span className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-brass/80" />
@@ -133,7 +133,7 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
           </ul>
         </div>
 
-        <div className="mt-2 flex items-center justify-between gap-1 text-[10px] font-bold">
+        <div className="mt-1 flex items-center justify-between gap-1 text-[10px] font-bold sm:mt-2">
           <div className="flex items-center gap-1">
             {cost > 0 ? (
               <span className="flex items-center gap-0.5 rounded-full bg-ember/20 px-1.5 py-0.5 text-ember">

@@ -71,4 +71,26 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: /pick your move/i })).toBeInTheDocument();
   });
+
+  it('keeps the active game page within a phone-width viewport', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    Object.defineProperty(document.documentElement, 'clientWidth', { configurable: true, value: 390 });
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes('min-width: 640px') ? false : false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /start game/i }));
+
+    expect(screen.getByRole('heading', { name: /your cards/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /pick your move/i })).toBeInTheDocument();
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(390);
+  });
 });

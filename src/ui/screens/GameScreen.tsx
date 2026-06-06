@@ -393,11 +393,11 @@ export const GameScreen = () => {
       : '';
 
   return (
-    <section className="relative grid flex-1 gap-4 py-4">
+    <section className="relative grid flex-1 gap-3 py-3 sm:gap-4 sm:py-4">
       {/* === TABLE === */}
       <div
-        className={`relative overflow-hidden rounded-[2.25rem] ${tableTheme} px-3 py-6 sm:px-6 sm:py-8 ${
-          isHumanTurn || reactPromptActive ? 'pb-[17rem] sm:pb-[15rem]' : ''
+        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} px-3 py-4 sm:rounded-[2.25rem] sm:px-6 sm:py-8 ${
+          isHumanTurn || reactPromptActive ? 'pb-[10rem] sm:pb-[15rem]' : ''
         } ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
       >
         {/* Floating helpers */}
@@ -436,7 +436,7 @@ export const GameScreen = () => {
         ) : null}
 
         {/* Phone opponent strip */}
-        <div className="relative z-10 mt-12 sm:hidden">
+        <div className="relative z-10 mt-11 sm:hidden">
           <div className="scroll-tight -mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-2">
             {opponents.map((p) => (
               <PlayerSeat
@@ -537,7 +537,7 @@ export const GameScreen = () => {
           </div>
         </div>
 
-        <div className="relative z-10 mt-3 sm:hidden">
+        <div className="relative z-10 mt-2 sm:hidden">
           <TableCenter
             prompt={tablePrompt}
             subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
@@ -548,7 +548,7 @@ export const GameScreen = () => {
         </div>
 
         {/* Human seat */}
-        <div className="relative z-10 mt-5">
+        <div className="relative z-10 mt-3 sm:mt-5">
           <HumanHand
             player={humanView}
             isActive={isHumanTurn}
@@ -650,14 +650,14 @@ export const GameScreen = () => {
           />
         </div>
       ) : isHumanTurn ? (
-        <div className={`surface-strong sticky bottom-0 z-30 -mx-1 rounded-2xl border px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur shadow-card ${handFlash ? 'human-turn-flash' : ''}`}>
-          <div className="flex items-center justify-between gap-3 pb-2">
+        <div className={`surface-strong sticky bottom-0 z-30 -mx-1 rounded-2xl border px-2 py-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur shadow-card sm:px-3 sm:py-3 ${handFlash ? 'human-turn-flash' : ''}`}>
+          <div className="flex items-center justify-between gap-3 pb-1.5 sm:pb-2">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.common.yourTurn}</p>
-              <h3 className="font-display text-lg font-black">
+              <h3 className="font-display text-base font-black sm:text-lg">
                 {pendingAction ? t.common.chooseTarget : t.common.actionPanelTitle}
               </h3>
-              <p className="text-app-muted text-[11px]">
+              <p className="text-app-muted text-[10px] sm:text-[11px]">
                 {pendingAction ? `${t.actions[pendingAction]} · ${t.common.chooseTarget}` : t.common.chooseAction}
               </p>
             </div>
