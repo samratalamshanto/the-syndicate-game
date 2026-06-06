@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useGameStore } from './useGameStore';
+import type { GameState } from '../domain/game/types';
+import { createCardLossEvent, defaultProfile, useGameStore } from './useGameStore';
 
 describe('useGameStore profile', () => {
   beforeEach(() => {
@@ -8,10 +9,18 @@ describe('useGameStore profile', () => {
       game: null,
       playerCount: 3,
       botDifficulty: 'medium',
+      profile: defaultProfile(),
+      achievements: defaultProfile().achievements,
+      achievementToast: null,
+      profileMatchResult: null,
     });
   });
 
-  it('records a human win when an action completes the match', () => {
+  it('defaults to light theme when localStorage has no saved setting', () => {
+    expect(useGameStore.getState().theme).toBe('light');
+  });
+
+  it('records a human win and unlocks untouchable when an action completes the match with no lost cards', () => {
     useGameStore.getState().startGame();
     const game = useGameStore.getState().game!;
     const humanId = game.config.humanPlayerId;
@@ -44,6 +53,7 @@ describe('useGameStore profile', () => {
     expect(useGameStore.getState().game?.phase).toBe('complete');
     expect(useGameStore.getState().profile.lifetimeWins).toBe(1);
     expect(useGameStore.getState().profile.currentStreak).toBe(1);
+    expect(useGameStore.getState().achievements.unlocked.untouchable).toBeDefined();
   });
 
   it('saves pending human choices so a reload can resume the prompt', () => {
@@ -143,4 +153,92 @@ describe('useGameStore profile', () => {
       outcome: 'liar',
     });
   });
+
+  it('creates a card loss event when a card is removed without a reveal status change', () => {
+    const prev = cardLossState();
+    const next: GameState = {
+      ...prev,
+      players: prev.players.map((player) =>
+        player.id === 'player-2'
+          ? { ...player, cards: [{ id: 'b1', role: 'leader', status: 'alive' }] }
+          : player,
+      ),
+    };
+
+    expect(createCardLossEvent(prev, next, { type: 'attack', actorId: 'player-1', targetId: 'player-2' })).toMatchObject({
+      playerId: 'player-2',
+      playerName: 'Bot A',
+      actionType: 'attack',
+      eliminated: false,
+    });
+  });
+
+  it('does not create a card loss event for a public reveal status change', () => {
+    const prev = cardLossState();
+    const next: GameState = {
+      ...prev,
+      players: prev.players.map((player) =>
+        player.id === 'player-2'
+          ? { ...player, cards: player.cards.map((card, index) => ({ ...card, status: index === 0 ? 'revealed' as const : card.status })) }
+          : player,
+      ),
+    };
+
+    expect(createCardLossEvent(prev, next, {
+      type: 'challenge',
+      actorId: 'player-2',
+      challengerId: 'player-1',
+      claimedRole: 'leader',
+      originalAction: { type: 'tax', actorId: 'player-2' },
+    })).toBeNull();
+  });
+});
+
+const cardLossState = (): GameState => ({
+  id: 'loss-test',
+  config: {
+    playerCount: 3,
+    humanPlayerId: 'player-1',
+    startingMoney: 2,
+    maxMoney: 10,
+    cardsPerPlayer: 2,
+    roleCopies: {
+      leader: 3,
+      officer: 3,
+      thief: 3,
+      helper: 3,
+      reporter: 3,
+    },
+    botDifficulty: 'medium',
+  },
+  currentPlayerId: 'player-1',
+  phase: 'action',
+  winnerId: null,
+  players: [
+    {
+      id: 'player-1',
+      name: 'You',
+      kind: 'human',
+      money: 2,
+      cards: [
+        { id: 'h1', role: 'leader', status: 'alive' },
+        { id: 'h2', role: 'officer', status: 'alive' },
+      ],
+    },
+    {
+      id: 'player-2',
+      name: 'Bot A',
+      kind: 'bot',
+      money: 2,
+      cards: [
+        { id: 'b1', role: 'leader', status: 'alive' },
+        { id: 'b2', role: 'helper', status: 'alive' },
+      ],
+    },
+  ],
+  deck: [],
+  log: [],
+  turnCount: 0,
+  botMemory: {},
+  pendingChoice: null,
 });

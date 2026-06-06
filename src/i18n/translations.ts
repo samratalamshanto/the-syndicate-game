@@ -9,6 +9,11 @@ type RoleCopy = {
   counter: string;
 };
 
+type AchievementCopy = {
+  name: string;
+  description: string;
+};
+
 type Translation = {
   gameTitle: string;
   subtitle: string;
@@ -20,6 +25,12 @@ type Translation = {
   };
   common: {
     guide: string;
+    guideTeaser: string;
+    or: string;
+    learnMoreRules: string;
+    rulesExamples: string;
+    downloadPdf: string;
+    log: string;
     newGame: string;
     light: string;
     dark: string;
@@ -33,9 +44,17 @@ type Translation = {
     revealed: string;
     chooseAction: string;
     chooseTarget: string;
+    noFunds: string;
     safeActions: string;
     roleActions: string;
     attackActions: string;
+    group: {
+      getMoney: string;
+      trickBlock: string;
+      strike: string;
+    };
+    needCoins: string;
+    cantAfford: string;
     canChallenge: string;
     canBlock: string;
     noBlock: string;
@@ -63,6 +82,7 @@ type Translation = {
     tableDecision: string;
     powerClaimed: string;
     cardLoss: string;
+    cardLossMoment: string;
     challengeDuelLine: string;
     challengeTargetLine: string;
     challengeNoTargetLine: string;
@@ -76,6 +96,7 @@ type Translation = {
     pass: string;
     inHand: string;
     outOfTime: string;
+    counterChallengePrompt: string;
     series: string;
     singleGame: string;
     bestOf3: string;
@@ -113,6 +134,8 @@ type Translation = {
     revealDetailChallenge: string;
     chooseExchangeTitle: string;
     chooseExchangeHelp: string;
+    chooseReplacementTitle: string;
+    chooseReplacementHelp: string;
     fromDeck: string;
     selectedCount: string;
     selected: string;
@@ -134,9 +157,44 @@ type Translation = {
     resetProfile: string;
     confirmReset: string;
     perPersona: string;
+    achievementUnlocked: string;
+    achievements: string;
+    daily: string;
+    todaysBest: string;
+    copyResult: string;
+    dailyCopied: string;
+    botConsidering: string;
+    botAccepts: string;
+    botCounters: string;
+    timer: string;
+    timerOff: string;
+    timerSeconds: string;
+    pauseTimer: string;
+    resumeTimer: string;
+    yourMove: string;
+    next: string;
+    youLabel: string;
+    secondsShort: string;
+    lastEvent: {
+      claim: string;
+      challengeWon: string;
+      challengeLost: string;
+      blocked: string;
+      gameStart: string;
+      generic: string;
+    };
+    required: {
+      challenge: string;
+      block: string;
+      pass: string;
+      pickAction: string;
+      chooseTarget: string;
+      counterChallenge: string;
+    };
   };
   actions: Record<string, string>;
   actionHelp: Record<string, string>;
+  achievements: Record<string, AchievementCopy>;
   roles: Record<RoleId, RoleCopy>;
   guide: {
     title: string;
@@ -165,6 +223,12 @@ const dailyEn: Translation = {
   },
   common: {
     guide: 'How to play',
+    guideTeaser: 'Learn in 60 seconds',
+    or: 'or',
+    learnMoreRules: 'Full rules + examples',
+    rulesExamples: 'Rules & examples',
+    downloadPdf: 'Download PDF',
+    log: 'Game log',
     newGame: 'New game',
     light: 'Day',
     dark: 'Dark',
@@ -178,9 +242,17 @@ const dailyEn: Translation = {
     revealed: 'Revealed',
     chooseAction: 'Choose one action below.',
     chooseTarget: 'Now choose a player.',
-    safeActions: 'Safe actions',
+    noFunds: 'no funds',
+    safeActions: 'Fund actions',
     roleActions: 'Role / bluff actions',
     attackActions: 'Attack actions',
+    group: {
+      getMoney: 'Get money',
+      trickBlock: 'Trick & block',
+      strike: 'Strike',
+    },
+    needCoins: 'Need {n} more',
+    cantAfford: 'You need {n} more coins.',
     canChallenge: 'Can be challenged',
     canBlock: 'Can be blocked',
     noBlock: 'Cannot be blocked',
@@ -199,7 +271,7 @@ const dailyEn: Translation = {
     botPlays: '{bot} plays',
     actionResolves: 'Result lands',
     challenge: 'Challenge!',
-    showingCard: 'Showing card...',
+    showingCard: 'Showing their hand...',
     liar: 'Liar!',
     truth: 'Truth!',
     eliminated: 'Eliminated',
@@ -208,6 +280,7 @@ const dailyEn: Translation = {
     tableDecision: 'Table decision',
     powerClaimed: 'Power claimed',
     cardLoss: 'Card loss',
+    cardLossMoment: '{player} lost a card',
     challengeDuelLine: '{challenger} challenged {actor}',
     challengeTargetLine: '{action} against {target}',
     challengeNoTargetLine: '{action}',
@@ -221,6 +294,7 @@ const dailyEn: Translation = {
     pass: 'Pass',
     inHand: 'in hand',
     outOfTime: 'Time up — passed.',
+    counterChallengePrompt: 'Counter-challenge the block?',
     series: 'Series',
     singleGame: 'Single game',
     bestOf3: 'Best of 3',
@@ -258,6 +332,8 @@ const dailyEn: Translation = {
     revealDetailChallenge: '{actor} challenged your {role} claim and caught it.',
     chooseExchangeTitle: 'Choose cards to keep',
     chooseExchangeHelp: 'Pick {n} to keep. The rest go back to the deck.',
+    chooseReplacementTitle: 'Choose your replacement card',
+    chooseReplacementHelp: 'Your proven card goes back to the deck. Pick 1 replacement.',
     fromDeck: 'From the deck',
     selectedCount: '{n} of {total} selected',
     selected: 'selected',
@@ -279,6 +355,40 @@ const dailyEn: Translation = {
     resetProfile: 'Reset profile',
     confirmReset: 'Reset all stats? This cannot be undone.',
     perPersona: 'Per-bot record',
+    achievementUnlocked: 'Achievement unlocked',
+    achievements: 'Achievements',
+    daily: 'Daily Challenge',
+    todaysBest: "Today's best",
+    copyResult: 'Copy daily result',
+    dailyCopied: 'Result copied.',
+    botConsidering: '{bot} is considering...',
+    botAccepts: '{bot} accepted the block.',
+    botCounters: '{bot} CHALLENGED the block!',
+    timer: 'Timer',
+    timerOff: 'Timer off',
+    timerSeconds: '{n}s timer',
+    pauseTimer: 'Pause timer',
+    resumeTimer: 'Resume timer',
+    yourMove: 'YOUR MOVE',
+    next: 'Next',
+    youLabel: 'You',
+    secondsShort: '{n}s',
+    lastEvent: {
+      claim: '{actor} claimed {role} → wants {amount} coins',
+      challengeWon: "{actor} called {target}'s bluff — {target} lost a card",
+      challengeLost: '{actor} challenged {target} — {actor} lost a card',
+      blocked: "{actor} blocked {target}'s {action}",
+      gameStart: "Game started — {actor}'s turn",
+      generic: '{event}',
+    },
+    required: {
+      challenge: 'Challenge?',
+      block: 'Block?',
+      pass: 'Let it pass?',
+      pickAction: 'Pick your move',
+      chooseTarget: 'Choose target',
+      counterChallenge: 'Counter-challenge?',
+    },
   },
   actions: {
     income: 'Take 1',
@@ -297,6 +407,25 @@ const dailyEn: Translation = {
     exchange: 'Claim Helper and exchange your cards with the deck.',
     attack: 'Claim Police, pay 3, then choose a player to lose one card.',
     eliminate: 'Pay 7 and choose a player. This cannot be blocked or challenged.',
+  },
+  achievements: {
+    firstWin: { name: 'First Win', description: 'Win your first match.' },
+    streak3: { name: 'Three in a Row', description: 'Build a 3-win streak.' },
+    streak5: { name: 'Five in a Row', description: 'Build a 5-win streak.' },
+    firstBluffCalled: { name: 'Bluff Caller', description: 'Catch a false role claim.' },
+    untouchable: { name: 'Untouchable', description: 'Win without losing a card.' },
+    eliminator: { name: 'Eliminator', description: 'Eliminate 3 or more bots in one match.' },
+    survivor: { name: 'Survivor', description: 'Win with one card left.' },
+    hardModeWin: { name: 'Hard Mode Cleared', description: 'Win against hard bots.' },
+    bestOf5Win: { name: 'Marathon Winner', description: 'Win a Best of 5 series.' },
+    readPersona_whisper: { name: 'Read Whisper', description: 'Beat Whisper in a match.' },
+    readPersona_iron: { name: 'Read Iron', description: 'Beat Iron in a match.' },
+    readPersona_vix: { name: 'Read Vix', description: 'Beat Vix in a match.' },
+    readPersona_pari: { name: 'Read Pari', description: 'Beat Pari in a match.' },
+    readPersona_tariq: { name: 'Read Tariq', description: 'Beat Tariq in a match.' },
+    readPersona_nova: { name: 'Read Nova', description: 'Beat Nova in a match.' },
+    readPersona_mori: { name: 'Read Mori', description: 'Beat Mori in a match.' },
+    readPersona_echo: { name: 'Read Echo', description: 'Beat Echo in a match.' },
   },
   roles: {
     leader: { name: 'Leader', power: 'Take 3 money.', counter: 'Blocks Take 2.' },
@@ -332,28 +461,28 @@ const dailyEn: Translation = {
     },
     flavor: {
       cautious: {
-        claim: ['Trust me.', 'Just routine.'],
-        challengeWin: ['Read you.'],
-        challengeLose: ['...fair.'],
-        bluffSuccess: ['Still calm.'],
+        claim: ['Trust me.', 'Just routine.', 'No rush.'],
+        challengeWin: ['Read you.', 'Too loud.', 'Bad mask.'],
+        challengeLose: ['...fair.', 'Noted.', 'I blinked.'],
+        bluffSuccess: ['Still calm.', 'Clean pass.', 'Nobody moved.'],
       },
       aggressive: {
-        claim: ['Move aside.', 'Pay attention.'],
-        challengeWin: ['Too easy.'],
-        challengeLose: ['Lucky hit.'],
-        bluffSuccess: ['Cracked you.'],
+        claim: ['Move aside.', 'Pay attention.', 'Pressure time.'],
+        challengeWin: ['Too easy.', 'Caught clean.', 'You cracked.'],
+        challengeLose: ['Lucky hit.', 'Bold call.', 'Fine. Again.'],
+        bluffSuccess: ['Cracked you.', 'Table folded.', 'Mine now.'],
       },
       unpredictable: {
-        claim: ['Maybe true.', 'Try me.'],
-        challengeWin: ['Wrong door.'],
-        challengeLose: ['Interesting.'],
-        bluffSuccess: ['That worked.'],
+        claim: ['Maybe true.', 'Try me.', 'Why not?'],
+        challengeWin: ['Wrong door.', 'Strange choice.', 'Not today.'],
+        challengeLose: ['Interesting.', 'That stung.', 'Good chaos.'],
+        bluffSuccess: ['That worked.', 'Beautiful noise.', 'Still legal.'],
       },
       mirror: {
-        claim: ['Your move.', 'Same energy.'],
-        challengeWin: ['Saw that.'],
-        challengeLose: ['I deserved that.'],
-        bluffSuccess: ['You taught me.'],
+        claim: ['Your move.', 'Same energy.', 'I copy pressure.'],
+        challengeWin: ['Saw that.', 'You showed me.', 'Pattern matched.'],
+        challengeLose: ['I deserved that.', 'Good mirror.', 'You adapted.'],
+        bluffSuccess: ['You taught me.', 'Same trick.', 'Your lesson worked.'],
       },
     },
   },
@@ -383,6 +512,12 @@ const dailyBn: Translation = {
   },
   common: {
     guide: 'কিভাবে খেলবেন',
+    guideTeaser: '৬০ সেকেন্ডে শিখুন',
+    or: 'অথবা',
+    learnMoreRules: 'পুরো নিয়ম + উদাহরণ',
+    rulesExamples: 'নিয়ম ও উদাহরণ',
+    downloadPdf: 'PDF ডাউনলোড',
+    log: 'গেম লগ',
     newGame: 'নতুন গেম',
     light: 'দিন',
     dark: 'ডার্ক',
@@ -396,9 +531,17 @@ const dailyBn: Translation = {
     revealed: 'খোলা',
     chooseAction: 'নিচ থেকে একটি কাজ বেছে নিন।',
     chooseTarget: 'এখন একজন প্লেয়ার বেছে নিন।',
-    safeActions: 'নিরাপদ কাজ',
+    noFunds: 'টাকা নেই',
+    safeActions: 'ফান্ড কাজ',
     roleActions: 'চরিত্র / ব্লাফ কাজ',
     attackActions: 'আক্রমণ',
+    group: {
+      getMoney: 'টাকা নিন',
+      trickBlock: 'চাল ও ব্লক',
+      strike: 'আঘাত',
+    },
+    needCoins: 'আরও {n} লাগবে',
+    cantAfford: 'আপনার আরও {n} টাকা লাগবে।',
     canChallenge: 'চ্যালেঞ্জ করা যাবে',
     canBlock: 'ব্লক করা যাবে',
     noBlock: 'ব্লক করা যাবে না',
@@ -417,7 +560,8 @@ const dailyBn: Translation = {
     botPlays: '{bot} চাল দিয়েছে',
     actionResolves: 'ফলাফল হলো',
     challenge: 'চ্যালেঞ্জ!',
-    showingCard: 'কার্ড দেখানো হচ্ছে...',
+    // TODO: native bn review before merge.
+    showingCard: 'কার্ড উন্মোচন হচ্ছে...',
     liar: 'মিথ্যা!',
     truth: 'সত্য!',
     eliminated: 'এলিমিনেটেড',
@@ -426,6 +570,8 @@ const dailyBn: Translation = {
     tableDecision: 'বোর্ডের সিদ্ধান্ত',
     powerClaimed: 'দাবি করা ক্ষমতা',
     cardLoss: 'কার্ড হারাবে',
+    // TODO: native bn review before merge.
+    cardLossMoment: '{player} একটি কার্ড হারিয়েছে',
     challengeDuelLine: '{challenger} {actor} কে চ্যালেঞ্জ করেছে',
     challengeTargetLine: '{target} এর বিরুদ্ধে {action}',
     challengeNoTargetLine: '{action}',
@@ -439,6 +585,7 @@ const dailyBn: Translation = {
     pass: 'পাস',
     inHand: 'হাতে আছে',
     outOfTime: 'সময় শেষ — পাস।',
+    counterChallengePrompt: 'ব্লক কাউন্টার চ্যালেঞ্জ?',
     series: 'সিরিজ',
     singleGame: 'একক গেম',
     bestOf3: 'সেরা ৩',
@@ -476,6 +623,8 @@ const dailyBn: Translation = {
     revealDetailChallenge: '{actor} আপনার {role} দাবি চ্যালেঞ্জ করে ধরে ফেলেছে।',
     chooseExchangeTitle: 'রাখার জন্য কার্ড বেছে নিন',
     chooseExchangeHelp: '{n} টি রাখুন। বাকিগুলো ডেকে ফিরবে।',
+    chooseReplacementTitle: 'নতুন কার্ড বেছে নিন',
+    chooseReplacementHelp: 'আপনার প্রমাণিত কার্ড ডেকে ফিরবে। ১টি নতুন কার্ড নিন।',
     fromDeck: 'ডেক থেকে',
     selectedCount: '{total} এর মধ্যে {n} বেছেছেন',
     selected: 'বাছাই করা',
@@ -497,6 +646,45 @@ const dailyBn: Translation = {
     resetProfile: 'প্রোফাইল রিসেট',
     confirmReset: 'সব পরিসংখ্যান রিসেট? এটি ফেরানো যাবে না।',
     perPersona: 'প্রতি বটের রেকর্ড',
+    achievementUnlocked: 'অর্জন আনলক হয়েছে',
+    achievements: 'অর্জন',
+    daily: 'দৈনিক চ্যালেঞ্জ',
+    todaysBest: 'আজকের সেরা',
+    copyResult: 'দৈনিক ফল কপি',
+    dailyCopied: 'ফল কপি হয়েছে।',
+    botConsidering: '{bot} ভাবছে...',
+    botAccepts: '{bot} ব্লক মেনেছে।',
+    botCounters: '{bot} ব্লক চ্যালেঞ্জ করেছে!',
+    timer: 'টাইমার',
+    timerOff: 'টাইমার বন্ধ',
+    timerSeconds: '{n}সে টাইমার',
+    pauseTimer: 'টাইমার বিরতি',
+    resumeTimer: 'টাইমার চালু',
+    yourMove: 'আপনার চাল',
+    next: 'পরবর্তী',
+    youLabel: 'আপনি',
+    secondsShort: '{n}সে',
+    lastEvent: {
+      // TODO: native bn review before merge.
+      claim: '{actor} {role} দাবি করল → {amount} কয়েন চায়',
+      // TODO: native bn review before merge.
+      challengeWon: '{actor} {target} এর ব্লাফ ধরল — {target} একটি কার্ড হারাল',
+      // TODO: native bn review before merge.
+      challengeLost: '{actor} {target} কে চ্যালেঞ্জ করল — {actor} একটি কার্ড হারাল',
+      // TODO: native bn review before merge.
+      blocked: '{actor}, {target} এর {action} ব্লক করল',
+      // TODO: native bn review before merge.
+      gameStart: 'গেম শুরু — {actor} এর পালা',
+      generic: '{event}',
+    },
+    required: {
+      challenge: 'চ্যালেঞ্জ?',
+      block: 'ব্লক?',
+      pass: 'পাস?',
+      pickAction: 'Pick your move / আপনার চাল বেছে নিন',
+      chooseTarget: 'টার্গেট বেছে নিন',
+      counterChallenge: 'কাউন্টার-চ্যালেঞ্জ?',
+    },
   },
   actions: {
     income: '১ নিন',
@@ -515,6 +703,25 @@ const dailyBn: Translation = {
     exchange: 'সাহায্যকারী দাবি করে ডেকের সাথে কার্ড বদল করুন।',
     attack: 'পুলিশ দাবি করে ৩ টাকা খরচ করুন, তারপর একজন প্লেয়ারের একটি কার্ড সরান।',
     eliminate: '৭ টাকা খরচ করে একজন প্লেয়ারের একটি কার্ড সরান। এটা ব্লক বা চ্যালেঞ্জ করা যাবে না।',
+  },
+  achievements: {
+    firstWin: { name: 'প্রথম জয়', description: 'প্রথম ম্যাচ জিতুন।' },
+    streak3: { name: 'পরপর তিন', description: '৩ জয়ের ধারা তৈরি করুন।' },
+    streak5: { name: 'পরপর পাঁচ', description: '৫ জয়ের ধারা তৈরি করুন।' },
+    firstBluffCalled: { name: 'মিথ্যা ধরেছেন', description: 'একটি মিথ্যা চরিত্র দাবি ধরুন।' },
+    untouchable: { name: 'অবিচ্ছেদ্য', description: 'কার্ড না হারিয়ে জিতুন।' },
+    eliminator: { name: 'নির্মূলকারী', description: 'এক ম্যাচে ৩ বা তার বেশি বট বাদ দিন।' },
+    survivor: { name: 'বেঁচে গেছেন', description: 'একটি কার্ড বাকি রেখে জিতুন।' },
+    hardModeWin: { name: 'কঠিন মোড জয়', description: 'কঠিন বটদের হারান।' },
+    bestOf5Win: { name: 'ম্যারাথন বিজয়', description: 'সেরা ৫ সিরিজ জিতুন।' },
+    readPersona_whisper: { name: 'Whisper কে পড়েছেন', description: 'এক ম্যাচে Whisper কে হারান।' },
+    readPersona_iron: { name: 'Iron কে পড়েছেন', description: 'এক ম্যাচে Iron কে হারান।' },
+    readPersona_vix: { name: 'Vix কে পড়েছেন', description: 'এক ম্যাচে Vix কে হারান।' },
+    readPersona_pari: { name: 'Pari কে পড়েছেন', description: 'এক ম্যাচে Pari কে হারান।' },
+    readPersona_tariq: { name: 'Tariq কে পড়েছেন', description: 'এক ম্যাচে Tariq কে হারান।' },
+    readPersona_nova: { name: 'Nova কে পড়েছেন', description: 'এক ম্যাচে Nova কে হারান।' },
+    readPersona_mori: { name: 'Mori কে পড়েছেন', description: 'এক ম্যাচে Mori কে হারান।' },
+    readPersona_echo: { name: 'Echo কে পড়েছেন', description: 'এক ম্যাচে Echo কে হারান।' },
   },
   roles: {
     leader: { name: 'নেতা', power: '৩ টাকা নেয়।', counter: '২ টাকা নেওয়া ব্লক করে।' },
@@ -550,28 +757,28 @@ const dailyBn: Translation = {
     },
     flavor: {
       cautious: {
-        claim: ['বিশ্বাস করুন।', 'সাধারণ চাল।'],
-        challengeWin: ['ধরে ফেলেছি।'],
-        challengeLose: ['...ঠিক আছে।'],
-        bluffSuccess: ['শান্ত আছি।'],
+        claim: ['বিশ্বাস করুন।', 'সাধারণ চাল।', 'তাড়া নেই।'],
+        challengeWin: ['ধরে ফেলেছি।', 'বেশি শব্দ।', 'মুখোশ খারাপ।'],
+        challengeLose: ['...ঠিক আছে।', 'মনে রাখলাম।', 'পলক পড়েছে।'],
+        bluffSuccess: ['শান্ত আছি।', 'পরিষ্কার পাস।', 'কেউ নড়েনি।'],
       },
       aggressive: {
-        claim: ['সরে দাঁড়ান।', 'মন দিন।'],
-        challengeWin: ['খুব সহজ।'],
-        challengeLose: ['ভাগ্য ভালো।'],
-        bluffSuccess: ['ভেঙে দিলাম।'],
+        claim: ['সরে দাঁড়ান।', 'মন দিন।', 'চাপের সময়।'],
+        challengeWin: ['খুব সহজ।', 'ধরা পড়লেন।', 'ভেঙে গেলেন।'],
+        challengeLose: ['ভাগ্য ভালো।', 'সাহসী ডাক।', 'আবার হবে।'],
+        bluffSuccess: ['ভেঙে দিলাম।', 'টেবিল ভাঁজ।', 'এখন আমার।'],
       },
       unpredictable: {
-        claim: ['হতেও পারে।', 'চেষ্টা করুন।'],
-        challengeWin: ['ভুল দরজা।'],
-        challengeLose: ['মজার।'],
-        bluffSuccess: ['কাজ হলো।'],
+        claim: ['হতেও পারে।', 'চেষ্টা করুন।', 'কেন নয়?'],
+        challengeWin: ['ভুল দরজা।', 'অদ্ভুত পছন্দ।', 'আজ নয়।'],
+        challengeLose: ['মজার।', 'লাগল কিন্তু।', 'ভালো বিশৃঙ্খলা।'],
+        bluffSuccess: ['কাজ হলো।', 'সুন্দর গোলমাল।', 'এখনও বৈধ।'],
       },
       mirror: {
-        claim: ['আপনার চাল।', 'একই শক্তি।'],
-        challengeWin: ['দেখেছি।'],
-        challengeLose: ['প্রাপ্য ছিল।'],
-        bluffSuccess: ['আপনিই শিখিয়েছেন।'],
+        claim: ['আপনার চাল।', 'একই শক্তি।', 'চাপ কপি করি।'],
+        challengeWin: ['দেখেছি।', 'আপনিই দেখালেন।', 'ছক মিলেছে।'],
+        challengeLose: ['প্রাপ্য ছিল।', 'ভালো আয়না।', 'আপনি বদলেছেন।'],
+        bluffSuccess: ['আপনিই শিখিয়েছেন।', 'একই কৌশল।', 'আপনার পাঠ কাজে।'],
       },
     },
   },
@@ -593,6 +800,10 @@ const dailyBn: Translation = {
 const syndicateEn: Translation = {
   ...dailyEn,
   gameTitle: 'The Syndicate',
+  common: {
+    ...dailyEn.common,
+    showingCard: 'Revealing the play...',
+  },
   actions: {
     income: 'Take 1',
     fundRaise: 'Fund Raise: take 2',
@@ -623,6 +834,11 @@ const syndicateEn: Translation = {
 const syndicateBn: Translation = {
   ...dailyBn,
   gameTitle: 'দ্য সিন্ডিকেট',
+  common: {
+    ...dailyBn.common,
+    // TODO: native bn review before merge.
+    showingCard: 'সিন্ডিকেটের হাত প্রকাশ পাচ্ছে...',
+  },
   actions: {
     income: '১ নিন',
     fundRaise: 'ফান্ড রেইজ: ২ নিন',

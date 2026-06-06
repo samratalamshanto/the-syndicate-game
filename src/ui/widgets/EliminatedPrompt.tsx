@@ -1,6 +1,7 @@
-import { Eye, RefreshCcw, Skull } from 'lucide-react';
+import { Eye, RefreshCcw, Settings, Skull } from 'lucide-react';
 import { translations } from '../../i18n/translations';
 import { useGameStore } from '../../store/useGameStore';
+import { Modal } from './Modal';
 
 type Props = {
   onWatch: () => void;
@@ -13,39 +14,55 @@ export const EliminatedPrompt = ({ onWatch, onSameSettings, onChangeSettings }: 
   const t = translations[language];
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-black/70 backdrop-blur-sm sm:place-items-center">
-      <div className="bottom-sheet surface-strong grid w-full max-w-xl gap-4 rounded-t-2xl border-2 border-ember px-5 py-5 text-center shadow-card sm:rounded-2xl">
-        <Skull size={38} className="mx-auto text-ember" />
-        <div>
-          <h3 className="font-display text-3xl font-black text-ember">{t.common.youAreOut}</h3>
-          <p className="text-app-muted text-sm">{t.common.spectateOrRestart}</p>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-3">
+    <Modal
+      open
+      onClose={onWatch}
+      title={t.common.youAreOut}
+      subtitle={t.common.spectateOrRestart}
+      icon={<Skull size={18} />}
+      size="lg"
+    >
+        <div className="grid gap-3 sm:grid-cols-3">
           <button
             type="button"
             onClick={onWatch}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-emerald-500 px-4 py-2 font-display font-black text-night"
+            className="group grid min-h-24 gap-2 rounded-xl border border-emerald-400/45 bg-emerald-500/15 px-4 py-3 text-left transition hover:border-emerald-300 hover:bg-emerald-500/25 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           >
-            <Eye size={16} />
-            {t.common.watchMatch}
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-400 text-night">
+              <Eye size={17} />
+            </span>
+            <span>
+              <span className="block font-display text-sm font-black text-app">{t.common.watchMatch}</span>
+              <span className="mt-1 block text-xs leading-snug text-app-muted">{t.common.spectating}</span>
+            </span>
           </button>
           <button
             type="button"
             onClick={onSameSettings}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brass px-4 py-2 font-display font-black text-night"
+            className="group grid min-h-24 gap-2 rounded-xl border border-brass/60 bg-brass/15 px-4 py-3 text-left transition hover:border-brass hover:bg-brass/25 focus:outline-none focus:ring-2 focus:ring-brass"
           >
-            <RefreshCcw size={16} />
-            {t.common.sameSettings}
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-brass text-night">
+              <RefreshCcw size={17} />
+            </span>
+            <span>
+              <span className="block font-display text-sm font-black text-app">{t.common.sameSettings}</span>
+              <span className="mt-1 block text-xs leading-snug text-app-muted">{t.common.newGame}</span>
+            </span>
           </button>
           <button
             type="button"
             onClick={onChangeSettings}
-            className="surface-control min-h-11 rounded-full border px-4 py-2 font-display font-black"
+            className="group grid min-h-24 gap-2 rounded-xl border border-token-soft bg-transparent px-4 py-3 text-left transition hover:border-brass/70 hover:bg-brass/10 focus:outline-none focus:ring-2 focus:ring-brass"
           >
-            {t.common.changeSettings}
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-token-soft text-brass">
+              <Settings size={17} />
+            </span>
+            <span>
+              <span className="block font-display text-sm font-black text-app">{t.common.changeSettings}</span>
+              <span className="mt-1 block text-xs leading-snug text-app-muted">{t.common.backToSetup}</span>
+            </span>
           </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };

@@ -1,14 +1,16 @@
 import { Coins, Crosshair, Hand, Shield, ShieldAlert, ShieldQuestion, Sparkles, Swords, Target, type LucideIcon } from 'lucide-react';
-import type { ActionType, RoleId } from '../../domain/game/types';
+import { useState } from 'react';
+import type { ActionType } from '../../domain/game/types';
 import { requiredRoleForAction } from '../../domain/game/engine';
 import { roleColors } from '../../config/branding';
-import { translations } from '../../i18n/translations';
+import { formatMessage, translations } from '../../i18n/translations';
 import { useGameStore } from '../../store/useGameStore';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 type Props = {
   type: ActionType;
   disabled?: boolean;
+  unaffordableBy?: number;
   onSelect: (type: ActionType) => void;
 };
 
@@ -72,18 +74,13 @@ const needsTarget: Record<ActionType, boolean> = {
   eliminate: true,
 };
 
-const roleAccent: Record<RoleId, string> = {
-  leader: 'from-sky-500 to-blue-800',
-  officer: 'from-red-500 to-red-900',
-  thief: 'from-cyan-500 to-teal-900',
-  helper: 'from-lime-400 to-emerald-900',
-  reporter: 'from-amber-400 to-orange-700',
-};
-
-export const ActionCard = ({ type, disabled, onSelect }: Props) => {
+export const ActionCard = ({ type, disabled, unaffordableBy = 0, onSelect }: Props) => {
   const language = useGameStore((state) => state.language);
   const t = translations[language];
   const isDesktop = useMediaQuery('(min-width: 640px)');
+  const [pressed, setPressed] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [showCostTip, setShowCostTip] = useState(false);
   const Icon = icons[type];
   const role = requiredRoleForAction(type);
   const gain = gains[type];
@@ -99,18 +96,40 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
   return (
     <button
       type="button"
-      disabled={disabled}
-      onClick={() => onSelect(type)}
+      aria-disabled={disabled}
+      onClick={() => {
+        if (disabled) {
+          setShake(true);
+          setShowCostTip(true);
+          window.setTimeout(() => setShake(false), 160);
+          window.setTimeout(() => setShowCostTip(false), 1200);
+          return;
+        }
+        setPressed(true);
+        window.setTimeout(() => onSelect(type), 60);
+      }}
+      onAnimationEnd={() => setPressed(false)}
       aria-label={t.actions[type]}
-      className="group relative flex aspect-[2/3] min-w-[116px] w-[34vw] max-w-[142px] flex-col overflow-hidden rounded-xl border border-brass/55 bg-gradient-to-b from-[#121922] to-[#05080c] text-paper shadow-card transition-all duration-200 hover:-translate-y-2 hover:border-brass hover:shadow-gold focus:outline-none focus:ring-2 focus:ring-brass disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:-translate-y-0 sm:w-36"
+      className={`group surface-strong relative flex min-h-36 w-full flex-col overflow-hidden rounded-lg border border-token shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-brass focus:outline-none focus:ring-2 focus:ring-brass sm:min-h-40 ${
+        disabled ? 'cursor-not-allowed opacity-75 hover:-translate-y-0' : ''
+      } ${
+        pressed ? 'chip-drop-active' : ''
+      } ${
+        shake ? 'target-shake' : ''
+      }`}
     >
-      <div className={`relative h-11 sm:h-14 bg-gradient-to-br ${headerGradient}`}>
+      {showCostTip && unaffordableBy > 0 ? (
+        <span className="absolute inset-x-2 bottom-9 z-20 rounded-lg bg-danger px-2 py-1 text-center text-[10px] font-black text-white shadow-chipDanger">
+          {formatMessage(t.common.cantAfford, { n: unaffordableBy })}
+        </span>
+      ) : null}
+      <div className={`relative h-9 shrink-0 sm:h-10 bg-gradient-to-br ${headerGradient}`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.35),transparent_55%)]" />
         <div className="absolute inset-0 grid place-items-center">
           <Icon size={isDesktop ? 22 : 18} className="text-white drop-shadow" />
         </div>
         {role ? (
-          <span className="absolute right-1 top-1 rounded-full bg-black/40 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-brass">
+          <span className="surface-muted absolute right-1 top-1 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-brass">
             {t.roles[role].name.slice(0, 4)}
           </span>
         ) : (
@@ -120,22 +139,27 @@ export const ActionCard = ({ type, disabled, onSelect }: Props) => {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-between px-2.5 py-2 text-left">
+      <div className="flex min-h-0 flex-1 flex-col justify-between px-3 py-2.5 text-left">
         <div>
-          <p className="font-display text-[12px] font-black leading-tight text-paper sm:text-[13px]">{t.actions[type]}</p>
-          <ul className="mt-1 grid gap-0.5 text-[10px] font-semibold leading-snug text-paper/85">
+          <p className="font-display text-[13px] font-black leading-snug text-app sm:text-sm">{t.actions[type]}</p>
+          <ul className="mt-1.5 grid gap-1 text-[11px] font-semibold leading-snug text-app">
             {helpPoints.map((point) => (
               <li key={point} className="flex gap-1">
                 <span className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-brass/80" />
-                <span className="line-clamp-2">{point}</span>
+                <span>{point}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mt-2 flex items-center justify-between gap-1 text-[10px] font-bold">
+        <div className="mt-1 flex items-center justify-between gap-1 text-[10px] font-bold sm:mt-2">
           <div className="flex items-center gap-1">
-            {cost > 0 ? (
+            {unaffordableBy > 0 ? (
+              <span className="flex items-center gap-0.5 rounded-full bg-ember/20 px-1.5 py-0.5 text-ember">
+                <Coins size={9} />
+                {formatMessage(t.common.needCoins, { n: unaffordableBy })}
+              </span>
+            ) : cost > 0 ? (
               <span className="flex items-center gap-0.5 rounded-full bg-ember/20 px-1.5 py-0.5 text-ember">
                 <Coins size={9} />-{cost}
               </span>

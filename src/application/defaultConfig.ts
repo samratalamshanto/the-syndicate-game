@@ -1,6 +1,6 @@
 import type { GameConfig } from '../domain/game/types';
 
-export const createDefaultConfig = (playerCount: number, botDifficulty: GameConfig['botDifficulty']): GameConfig => {
+export const createDefaultConfig = (playerCount: number, botDifficulty: GameConfig['botDifficulty'], seed?: string): GameConfig => {
   const copies = Math.max(3, Math.ceil((playerCount * 2 + 3) / 5));
 
   return {
@@ -17,5 +17,6 @@ export const createDefaultConfig = (playerCount: number, botDifficulty: GameConf
       reporter: copies,
     },
     botDifficulty,
+    seed,
   };
 };

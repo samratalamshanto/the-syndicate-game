@@ -7,48 +7,62 @@
 :root {
   color-scheme: light dark;
   font-family: Inter, system-ui, sans-serif;
-  --app-bg:
-    radial-gradient(circle at 15% 12%, rgba(214, 166, 81, 0.28), transparent 38%),
-    radial-gradient(circle at 82% 20%, rgba(43, 140, 126, 0.14), transparent 42%),
-    linear-gradient(180deg, #f7efd9 0%, #ead9b6 62%, #dfc99c 100%);
-  --on-app: #24180d;
-  --on-muted: rgba(36, 24, 13, 0.72);
-  --surface: rgba(255, 251, 238, 0.86);
-  --surface-strong: rgba(255, 251, 238, 0.96);
-  --surface-muted: rgba(120, 83, 34, 0.12);
-  --surface-glass: rgba(255, 251, 238, 0.72);
-  --line: rgba(154, 111, 44, 0.46);
-  --line-soft: rgba(154, 111, 44, 0.22);
-  --control: rgba(255, 251, 238, 0.88);
-  --control-hover: rgba(214, 166, 81, 0.22);
-  --inverse: #080b10;
-  --inverse-on: #f5efe1;
+  --app-bg: #faf6ec;
+  --on-app: #1a2332;
+  --on-muted: #5a6473;
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #f3ecda;
+  --surface-glass: rgba(255, 255, 255, 0.86);
+  --line: #e6deca;
+  --line-soft: #f0e6d0;
+  --control: #ffffff;
+  --control-hover: #f3ecda;
+  --inverse: #1a2332;
+  --inverse-on: #faf6ec;
+  --accent: #b8821e;
+  --accent-strong: #b8821e;
+  --danger: #c93838;
+  --danger-on: #ffffff;
+  --success: #2a7f5a;
+  --warn: #d18b2a;
+  --on-dark: #f5f0e3;
+  --on-dark-muted: #a0a8b4;
 }
 
 .dark {
-  --app-bg:
-    radial-gradient(circle at 15% 15%, rgba(214, 166, 81, 0.18), transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(43, 140, 126, 0.18), transparent 50%),
-    linear-gradient(180deg, #0b1016 0%, #080b10 100%);
-  --on-app: #f5efe1;
-  --on-muted: rgba(245, 239, 225, 0.68);
-  --surface: rgba(8, 11, 16, 0.82);
-  --surface-strong: rgba(8, 11, 16, 0.96);
-  --surface-muted: rgba(0, 0, 0, 0.38);
-  --surface-glass: rgba(8, 11, 16, 0.58);
-  --line: rgba(214, 166, 81, 0.4);
-  --line-soft: rgba(214, 166, 81, 0.22);
-  --control: rgba(0, 0, 0, 0.42);
-  --control-hover: rgba(214, 166, 81, 0.24);
-  --inverse: #f5efe1;
-  --inverse-on: #080b10;
+  --app-bg: #1a1d24;
+  --on-app: #f5f0e3;
+  --on-muted: #a0a8b4;
+  --surface: #252932;
+  --surface-strong: #2c313b;
+  --surface-muted: #1f232b;
+  --surface-glass: rgba(37, 41, 50, 0.86);
+  --line: #353a45;
+  --line-soft: #2c313b;
+  --control: #252932;
+  --control-hover: #2c313b;
+  --inverse: #f5f0e3;
+  --inverse-on: #1a1d24;
+  --accent: #d4a548;
+  --accent-strong: #d4a548;
+  --danger: #e85a4f;
+  --danger-on: #ffffff;
+  --success: #4ab287;
+  --warn: #e7a13a;
+  --on-dark: #f5f0e3;
+  --on-dark-muted: #a0a8b4;
+}
+
+html {
+  background: var(--app-bg);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #ead9b6;
+  background: var(--app-bg);
 }
 
 button,
@@ -113,33 +127,127 @@ select {
   color: var(--inverse-on);
 }
 
+.text-accent {
+  color: var(--accent);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.bg-accent {
+  background: var(--accent);
+  color: var(--inverse-on);
+}
+
+.border-accent {
+  border-color: var(--accent);
+}
+
+.bg-danger {
+  background: var(--danger);
+  color: var(--danger-on);
+}
+
+.ring-accent {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.text-on-dark {
+  color: var(--on-dark);
+}
+
+.text-on-dark-muted {
+  color: var(--on-dark-muted);
+}
+
 /* ---------- Felt table background ---------- */
 .felt-table {
-  background-color: #0e3a2f;
-  background-image:
-    radial-gradient(ellipse 80% 70% at 50% 45%, rgba(40, 120, 90, 0.55) 0%, rgba(14, 58, 47, 0.85) 55%, rgba(7, 32, 24, 1) 100%),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 4px);
+  background-color: #f3ecda;
   box-shadow:
-    inset 0 0 0 2px rgba(214, 166, 81, 0.45),
-    inset 0 0 0 7px rgba(8, 11, 16, 0.6),
-    inset 0 0 0 9px rgba(214, 166, 81, 0.35),
-    inset 0 0 90px rgba(0, 0, 0, 0.7),
-    0 30px 80px rgba(0, 0, 0, 0.55);
+    inset 0 0 0 1px #e6deca,
+    0 4px 12px rgba(26, 35, 50, 0.06);
+  border-radius: 16px;
 }
 
 .felt-table-light {
-  background-color: #c9a76a;
-  background-image:
-    radial-gradient(ellipse 80% 70% at 50% 45%, rgba(245, 224, 178, 0.5) 0%, rgba(180, 140, 80, 0.5) 60%, rgba(120, 88, 40, 0.6) 100%),
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.04) 0 2px, transparent 2px 4px);
+  background-color: #f3ecda;
   box-shadow:
-    inset 0 0 0 2px rgba(154, 111, 44, 0.7),
-    inset 0 0 0 7px rgba(245, 239, 225, 0.75),
-    inset 0 0 0 9px rgba(154, 111, 44, 0.55),
-    inset 0 0 90px rgba(120, 88, 40, 0.45),
-    0 30px 80px rgba(0, 0, 0, 0.35);
+    inset 0 0 0 1px #e6deca,
+    0 4px 12px rgba(26, 35, 50, 0.06);
+  border-radius: 16px;
+}
+
+.dark .felt-table,
+.dark .felt-table-light {
+  background-color: #2c313b;
+  box-shadow:
+    inset 0 0 0 1px #353a45,
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.table-stage {
+  min-height: clamp(25rem, 46vw, 32rem);
+}
+
+.table-stage::before {
+  content: '';
+  position: absolute;
+  inset: clamp(3.5rem, 6vw, 4.5rem) clamp(5rem, 10vw, 7rem) clamp(5.5rem, 9vw, 6.5rem);
+  border-radius: 999px;
+  background: #dfe9d8;
+  box-shadow:
+    inset 0 0 0 2px rgba(42, 127, 90, 0.24),
+    inset 0 0 48px rgba(90, 100, 115, 0.12),
+    0 8px 24px rgba(26, 35, 50, 0.08);
+  pointer-events: none;
+}
+
+.dark .table-stage::before {
+  background: #202b26;
+  box-shadow:
+    inset 0 0 0 2px rgba(74, 178, 135, 0.24),
+    inset 0 0 48px rgba(0, 0, 0, 0.22),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.table-stage::after {
+  content: '';
+  position: absolute;
+  inset: clamp(7rem, 13vw, 9rem) clamp(14rem, 24vw, 20rem) clamp(10rem, 18vw, 12rem);
+  border-radius: 999px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.table-seat {
+  max-width: 13.5rem;
+  min-width: 10.5rem;
+  transform-origin: center;
+}
+
+.table-seat-top {
+  flex: 1 1 0;
+}
+
+.table-seat-side {
+  width: 12rem;
+}
+
+.felt-seat,
+.felt-human-hand {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--on-app);
+  box-shadow: 0 4px 12px rgba(26, 35, 50, 0.06);
+}
+
+.felt-human-hand {
+  background: var(--surface);
 }
 
 /* ---------- Gold ornamental border ---------- */
@@ -168,19 +276,23 @@ select {
 .card-back-pattern {
   background-color: #5c1a1a;
   background-image:
-    radial-gradient(circle at 50% 50%, rgba(214, 166, 81, 0.18) 0, rgba(214, 166, 81, 0.18) 22%, transparent 23%),
     repeating-linear-gradient(45deg, rgba(214, 166, 81, 0.18) 0 1px, transparent 1px 8px),
     repeating-linear-gradient(-45deg, rgba(214, 166, 81, 0.18) 0 1px, transparent 1px 8px),
     linear-gradient(135deg, #4a1414 0%, #6e1f1f 50%, #3a0e0e 100%);
+  background-size: auto, auto, auto;
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat, no-repeat;
 }
 
 .card-back-pattern-light {
   background-color: #1d4a3f;
   background-image:
-    radial-gradient(circle at 50% 50%, rgba(214, 166, 81, 0.25) 0, rgba(214, 166, 81, 0.25) 22%, transparent 23%),
     repeating-linear-gradient(45deg, rgba(214, 166, 81, 0.22) 0 1px, transparent 1px 8px),
     repeating-linear-gradient(-45deg, rgba(214, 166, 81, 0.22) 0 1px, transparent 1px 8px),
     linear-gradient(135deg, #133024 0%, #235c4a 50%, #0d1f17 100%);
+  background-size: auto, auto, auto;
+  background-position: 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat, no-repeat;
 }
 
 .card-dead {
@@ -268,6 +380,24 @@ select {
   animation: sheetUp 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+.felt-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255, 240, 200, 0.06), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255, 240, 200, 0.04), transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255, 240, 200, 0.05), transparent 60%);
+  background-size: 200% 200%, 220% 220%, 180% 180%;
+  animation: smokeDrift 36s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+.chip-drop-active {
+  animation: chipDrop 220ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 @keyframes coinFlight {
   0% {
     transform: translate(var(--coin-from-x), var(--coin-from-y)) scale(0.85);
@@ -322,9 +452,32 @@ select {
   to { transform: translateY(0); }
 }
 
+@keyframes smokeDrift {
+  0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  100% { background-position: 30% 20%, 70% 80%, 60% 40%; }
+}
+
+@keyframes chipDrop {
+  0% { transform: translateY(0) scale(1); box-shadow: 0 22px 60px rgba(8, 11, 16, 0.45); }
+  40% { transform: translateY(4px) scale(0.97); box-shadow: 0 6px 16px rgba(8, 11, 16, 0.6); }
+  100% { transform: translateY(0) scale(1); box-shadow: 0 22px 60px rgba(8, 11, 16, 0.45); }
+}
+
 /* ---------- Spotlight underneath active seat ---------- */
 .seat-spotlight {
-  background: radial-gradient(circle at 50% 50%, rgba(214, 166, 81, 0.4) 0%, rgba(214, 166, 81, 0) 70%);
+  background:
+    radial-gradient(ellipse 80% 100% at 50% 0%,
+      rgba(214, 166, 81, 0.55) 0%,
+      rgba(214, 166, 81, 0.25) 35%,
+      rgba(214, 166, 81, 0) 72%);
+  filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .felt-atmosphere,
+  .chip-drop-active {
+    animation: none;
+  }
 }
 
 .last-card-table {
@@ -347,3 +500,36 @@ select {
 /* ---------- Scrollbar polish ---------- */
 .scroll-tight::-webkit-scrollbar { width: 6px; }
 .scroll-tight::-webkit-scrollbar-thumb { background: rgba(214, 166, 81, 0.5); border-radius: 3px; }
+
+.modal-h1 {
+  font-family: Cinzel, serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--on-app);
+}
+
+.modal-h2 {
+  font-family: Cinzel, serif;
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+.modal-body {
+  color: var(--on-app);
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+
+.modal-tip {
+  margin-top: 0.5rem;
+  border-radius: 0.375rem;
+  background: var(--surface-muted);
+  padding: 0.5rem 0.75rem;
+  color: var(--on-muted);
+  font-size: 0.75rem;
+}
+
+.portrait-mask {
+  mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
+}

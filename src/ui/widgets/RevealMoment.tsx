@@ -27,10 +27,10 @@ export const RevealMoment = ({ event, onDone }: Props) => {
   const roleName = t.roles[event.role].name;
 
   return (
-    <div className={`pointer-events-none fixed inset-0 z-[80] grid place-items-end bg-black/70 p-0 backdrop-blur-sm sm:place-items-center sm:p-4 ${event.eliminated ? 'red-flash' : 'gold-flash'}`}>
-      <div className="bottom-sheet grid w-full justify-items-center gap-4 rounded-t-2xl bg-night/95 px-4 py-5 text-center sm:w-auto sm:rounded-none sm:bg-transparent sm:p-0">
+    <div className={`pointer-events-none fixed inset-0 z-[80] grid place-items-end bg-[rgba(26,35,50,0.7)] p-0 backdrop-blur-sm sm:place-items-center sm:p-4 ${event.eliminated ? 'red-flash' : 'gold-flash'}`}>
+      <div className="bottom-sheet surface-strong grid w-full justify-items-center gap-4 rounded-t-2xl px-4 py-5 text-center sm:w-auto sm:rounded-2xl sm:bg-transparent sm:p-0">
         {event.eliminated ? (
-          <div className="inline-flex items-center gap-2 rounded-full border border-ember bg-ember px-5 py-2 font-display text-2xl font-black uppercase tracking-widest text-paper shadow-chipDanger">
+          <div className="inline-flex items-center gap-2 rounded-full border border-ember bg-danger px-5 py-2 font-display text-2xl font-black uppercase tracking-widest shadow-chipDanger">
             <Skull size={26} />
             {t.common.eliminated}
           </div>

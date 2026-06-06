@@ -6,6 +6,7 @@ export type SavedSettings = {
   theme: 'light' | 'dark';
   soundMuted?: boolean;
   seriesLength?: 1 | 3 | 5;
+  reactTimerSeconds?: number;
 };
 
 export type ProfileState = {
@@ -16,6 +17,17 @@ export type ProfileState = {
   perPersona: Record<string, { wins: number; losses: number }>;
   firstWinAt: number | null;
   matchesPlayed: number;
+  achievements: AchievementState;
+  dailyCompleted: Record<string, DailyResult>;
+};
+
+export type AchievementState = {
+  unlocked: Record<string, number>;
+};
+
+export type DailyResult = {
+  won: boolean;
+  rounds: number;
 };
 
 export type GameStorage = {

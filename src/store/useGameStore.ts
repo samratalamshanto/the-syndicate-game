@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { browserStorage } from '../adapters/storage/browserStorage';
 import { botByDifficulty } from '../adapters/bot/localBots';
+import { getBotMemory, observeBotMemory, resetBotMemory } from '../adapters/bot/botMemory';
 import { createDefaultConfig } from '../application/defaultConfig';
-import { botPersonas, getPersona } from '../config/botPersonas';
+import { unlockedAchievementIds } from '../application/achievementRules';
+import { botPersonas } from '../config/botPersonas';
 import { createGame, resolveAction } from '../domain/game/engine';
+import { dailySeed } from '../domain/game/random';
 import type { ActionType, BotDifficulty, GameAction, GameState, PrimaryGameAction, RoleId } from '../domain/game/types';
 import type { Language } from '../i18n/translations';
-import type { ProfileState } from '../ports/GameStorage';
+import type { BotReaction } from '../ports/BotStrategy';
+import type { AchievementState, ProfileState } from '../ports/GameStorage';
 
 type Theme = 'light' | 'dark';
 export type SpectatorMode = 'choose' | 'watching' | null;
@@ -18,6 +22,14 @@ export type RevealEvent = {
   role: RoleId;
   eliminated: boolean;
   actionType: GameAction['type'];
+};
+
+export type CardLossEvent = {
+  id: string;
+  playerId: string;
+  playerName: string;
+  actionType: GameAction['type'];
+  eliminated: boolean;
 };
 
 export type ChallengeEvent = {
@@ -78,6 +90,11 @@ export type ProfileMatchResult = {
   previousStreak: number;
 };
 
+export type AchievementToast = {
+  id: string;
+  unlockedAt: number;
+};
+
 type GameStore = {
   game: GameState | null;
   language: Language;
@@ -85,23 +102,31 @@ type GameStore = {
   soundMuted: boolean;
   series: SeriesState;
   profile: ProfileState;
+  achievements: AchievementState;
   profileMatchResult: ProfileMatchResult | null;
+  achievementToast: AchievementToast | null;
   payoffEvent: PayoffEvent | null;
   flavorEvent: FlavorEvent | null;
   gameSummary: GameSummary | null;
   revealEvent: RevealEvent | null;
+  cardLossEvent: CardLossEvent | null;
   challengeEvent: ChallengeEvent | null;
   coinEvent: CoinEvent | null;
   spectatorMode: SpectatorMode;
   playerCount: number;
   botDifficulty: BotDifficulty;
+  reactTimerSeconds: number;
   startGame(): void;
   newGame(): void;
   backToSetup(): void;
   nextRound(): void;
   resetProfile(): void;
+  unlockAchievement(id: string): void;
+  startDailyGame(): void;
   act(action: GameAction): void;
   chooseBotAction(): PrimaryGameAction | null;
+  chooseBotReaction(botId: string, pendingAction: PrimaryGameAction): BotReaction;
+  chooseBotCounterChallenge(botId: string, blockingRole: RoleId): boolean;
   resolveBotAction(action: GameAction): void;
   runBotTurn(): void;
   setLanguage(language: Language): void;
@@ -111,11 +136,14 @@ type GameStore = {
   clearPayoffEvent(id?: string): void;
   clearFlavorEvent(id?: string): void;
   clearRevealEvent(id?: string): void;
+  clearCardLossEvent(id?: string): void;
   clearChallengeEvent(id?: string): void;
   clearCoinEvent(id?: string): void;
+  clearAchievementToast(id?: string): void;
   setSpectatorMode(mode: SpectatorMode): void;
   setPlayerCount(playerCount: number): void;
   setBotDifficulty(botDifficulty: BotDifficulty): void;
+  setReactTimerSeconds(seconds: number): void;
 };
 
 const savedSettings = typeof localStorage === 'undefined' ? null : browserStorage.loadSettings();
@@ -138,32 +166,75 @@ export const defaultProfile = (): ProfileState => ({
   perPersona: {},
   firstWinAt: null,
   matchesPlayed: 0,
+  achievements: defaultAchievements(),
+  dailyCompleted: {},
 });
+
+const defaultAchievements = (): AchievementState => ({ unlocked: {} });
+
+const normalizeProfile = (profile: ProfileState | null): ProfileState => ({
+  ...defaultProfile(),
+  ...(profile ?? {}),
+  achievements: {
+    unlocked: {
+      ...(profile?.achievements?.unlocked ?? {}),
+    },
+  },
+  dailyCompleted: {
+    ...(profile?.dailyCompleted ?? {}),
+  },
+});
+
+const savedProfileState = normalizeProfile(savedProfile);
 
 export const useGameStore = create<GameStore>((set, get) => ({
   game: savedGame,
   language: savedSettings?.language ?? 'en',
-  theme: savedSettings?.theme ?? 'dark',
+  theme: savedSettings?.theme ?? 'light',
   soundMuted: savedSettings?.soundMuted ?? true,
   series: defaultSeries(savedSettings?.seriesLength ?? 1),
-  profile: savedProfile ?? defaultProfile(),
+  profile: savedProfileState,
+  achievements: savedProfileState.achievements,
   profileMatchResult: null,
+  achievementToast: null,
   payoffEvent: null,
   flavorEvent: null,
   gameSummary: null,
   revealEvent: null,
+  cardLossEvent: null,
   challengeEvent: null,
   coinEvent: null,
   spectatorMode: null,
   playerCount: 4,
   botDifficulty: 'medium',
+  reactTimerSeconds: savedSettings?.reactTimerSeconds ?? 12,
   startGame() {
+    resetBotMemory();
     const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
     browserStorage.saveGame(game);
     set({
       game,
       series: defaultSeries(get().series.length),
       revealEvent: null,
+      cardLossEvent: null,
+      challengeEvent: null,
+      coinEvent: null,
+      payoffEvent: null,
+      flavorEvent: null,
+      gameSummary: null,
+      profileMatchResult: null,
+      spectatorMode: null,
+    });
+  },
+  startDailyGame() {
+    resetBotMemory();
+    const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty, dailySeed())));
+    browserStorage.saveGame(game);
+    set({
+      game,
+      series: defaultSeries(1),
+      revealEvent: null,
+      cardLossEvent: null,
       challengeEvent: null,
       coinEvent: null,
       payoffEvent: null,
@@ -175,12 +246,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   newGame() {
     browserStorage.clearGame();
+    resetBotMemory();
     const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
     browserStorage.saveGame(game);
     set({
       game,
       series: defaultSeries(get().series.length),
       revealEvent: null,
+      cardLossEvent: null,
       challengeEvent: null,
       coinEvent: null,
       payoffEvent: null,
@@ -192,9 +265,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   backToSetup() {
     browserStorage.clearGame();
+    resetBotMemory();
     set({
       game: null,
       revealEvent: null,
+      cardLossEvent: null,
       challengeEvent: null,
       coinEvent: null,
       payoffEvent: null,
@@ -212,6 +287,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       game,
       series: { ...get().series, round: get().series.round + 1 },
       revealEvent: null,
+      cardLossEvent: null,
       challengeEvent: null,
       coinEvent: null,
       payoffEvent: null,
@@ -224,7 +300,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
   resetProfile() {
     const profile = defaultProfile();
     browserStorage.clearProfile();
-    set({ profile, profileMatchResult: null });
+    set({ profile, achievements: profile.achievements, profileMatchResult: null, achievementToast: null });
+  },
+  unlockAchievement(id) {
+    const profile = get().profile;
+    if (profile.achievements.unlocked[id] !== undefined) {
+      return;
+    }
+    const unlockedAt = Date.now();
+    const achievements = {
+      unlocked: {
+        ...profile.achievements.unlocked,
+        [id]: unlockedAt,
+      },
+    };
+    const nextProfile = { ...profile, achievements };
+    browserStorage.saveProfile(nextProfile);
+    set({ profile: nextProfile, achievements, achievementToast: { id, unlockedAt } });
   },
   act(action) {
     const game = get().game;
@@ -232,18 +324,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
     const next = resolveAction(game, action);
+    observeBotMemory(game, next, action);
     const nextSeries = updateSeries(get().series, game, next);
     const profileUpdate = updateProfile(get().profile, game, next);
-    if (profileUpdate) {
-      browserStorage.saveProfile(profileUpdate.profile);
+    const achievementUpdate = updateAchievements(get().profile, profileUpdate?.profile ?? get().profile, game, next, action, nextSeries);
+    const nextProfile = achievementUpdate.profile;
+    if (profileUpdate || achievementUpdate.unlockedId) {
+      browserStorage.saveProfile(nextProfile);
     }
     browserStorage.saveGame(next);
     set({
       game: next,
       series: nextSeries,
-      profile: profileUpdate?.profile ?? get().profile,
+      profile: nextProfile,
+      achievements: nextProfile.achievements,
       profileMatchResult: profileUpdate?.result ?? get().profileMatchResult,
+      achievementToast: achievementUpdate.unlockedId
+        ? { id: achievementUpdate.unlockedId, unlockedAt: nextProfile.achievements.unlocked[achievementUpdate.unlockedId] }
+        : get().achievementToast,
       revealEvent: createRevealEvent(game, next, action),
+      cardLossEvent: createCardLossEvent(game, next, action),
       challengeEvent: createChallengeEvent(game, next, action),
       coinEvent: createCoinEvent(game, next, action),
       payoffEvent: createPayoffEvent(game, next, action),
@@ -262,7 +362,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return null;
     }
     const strategy = botByDifficulty[game.config.botDifficulty];
-    return strategy.chooseAction(game, bot.id) as PrimaryGameAction;
+    return strategy.chooseAction(game, bot.id, getBotMemory()) as PrimaryGameAction;
+  },
+  chooseBotReaction(botId, pendingAction) {
+    const game = get().game;
+    if (!game || game.phase === 'complete') {
+      return { kind: 'pass' };
+    }
+    const bot = game.players.find((player) => player.id === botId && player.kind === 'bot');
+    if (!bot) {
+      return { kind: 'pass' };
+    }
+    const strategy = botByDifficulty[game.config.botDifficulty];
+    return strategy.chooseReaction(game, bot.id, pendingAction, getBotMemory());
+  },
+  chooseBotCounterChallenge(botId, blockingRole) {
+    const game = get().game;
+    if (!game || game.phase === 'complete') {
+      return false;
+    }
+    const bot = game.players.find((player) => player.id === botId && player.kind === 'bot');
+    if (!bot) {
+      return false;
+    }
+    const strategy = botByDifficulty[game.config.botDifficulty];
+    return strategy.chooseCounterChallenge(game, bot.id, blockingRole, getBotMemory());
   },
   resolveBotAction(action) {
     get().act(action);
@@ -274,23 +398,23 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
   setLanguage(language) {
-    const { theme, soundMuted, series } = get();
-    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length });
+    const { theme, soundMuted, series, reactTimerSeconds } = get();
+    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length, reactTimerSeconds });
     set({ language });
   },
   setTheme(theme) {
-    const { language, soundMuted, series } = get();
-    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length });
+    const { language, soundMuted, series, reactTimerSeconds } = get();
+    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length, reactTimerSeconds });
     set({ theme });
   },
   setSoundMuted(soundMuted) {
-    const { language, theme, series } = get();
-    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length });
+    const { language, theme, series, reactTimerSeconds } = get();
+    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length, reactTimerSeconds });
     set({ soundMuted });
   },
   setSeriesLength(length) {
-    const { language, theme, soundMuted } = get();
-    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: length });
+    const { language, theme, soundMuted, reactTimerSeconds } = get();
+    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: length, reactTimerSeconds });
     set({ series: defaultSeries(length) });
   },
   clearPayoffEvent(id) {
@@ -311,6 +435,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       set({ revealEvent: null });
     }
   },
+  clearCardLossEvent(id) {
+    const event = get().cardLossEvent;
+    if (!id || event?.id === id) {
+      set({ cardLossEvent: null });
+    }
+  },
   clearChallengeEvent(id) {
     const event = get().challengeEvent;
     if (!id || event?.id === id) {
@@ -323,6 +453,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       set({ coinEvent: null });
     }
   },
+  clearAchievementToast(id) {
+    const event = get().achievementToast;
+    if (!id || event?.id === id) {
+      set({ achievementToast: null });
+    }
+  },
   setSpectatorMode(mode) {
     set({ spectatorMode: mode });
   },
@@ -331,6 +467,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   setBotDifficulty(botDifficulty) {
     set({ botDifficulty });
+  },
+  setReactTimerSeconds(reactTimerSeconds) {
+    const { language, theme, soundMuted, series } = get();
+    browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length, reactTimerSeconds });
+    set({ reactTimerSeconds });
   },
 }));
 
@@ -401,6 +542,16 @@ const updateProfile = (
 
   return {
     profile: {
+      achievements: profile.achievements,
+      dailyCompleted: next.config.seed
+        ? {
+            ...profile.dailyCompleted,
+            [next.config.seed]: {
+              won: humanWon,
+              rounds: next.log.length,
+            },
+          }
+        : profile.dailyCompleted,
       lifetimeWins: profile.lifetimeWins + (humanWon ? 1 : 0),
       lifetimeLosses: profile.lifetimeLosses + (humanWon ? 0 : 1),
       currentStreak,
@@ -415,6 +566,28 @@ const updateProfile = (
       previousStreak,
     },
   };
+};
+
+const updateAchievements = (
+  profileBefore: ProfileState,
+  profileAfter: ProfileState,
+  prev: GameState,
+  next: GameState,
+  action: GameAction,
+  series: SeriesState,
+): { profile: ProfileState; unlockedId: string | null } => {
+  const ids = unlockedAchievementIds(profileAfter.achievements, profileBefore, profileAfter, prev, next, action, series);
+  if (ids.length === 0) {
+    return { profile: profileAfter, unlockedId: null };
+  }
+  const unlockedAt = Date.now();
+  const achievements = {
+    unlocked: {
+      ...profileAfter.achievements.unlocked,
+      ...Object.fromEntries(ids.map((id) => [id, unlockedAt])),
+    },
+  };
+  return { profile: { ...profileAfter, achievements }, unlockedId: ids[0] };
 };
 
 const createRevealEvent = (prev: GameState, next: GameState, action: GameAction): RevealEvent | null => {
@@ -433,6 +606,22 @@ const createRevealEvent = (prev: GameState, next: GameState, action: GameAction)
       role: revealed.role,
       eliminated: liveCardCount(prev, nextPlayer.id) > 0 && liveCardCount(next, nextPlayer.id) === 0,
       actionType: action.type,
+    };
+  }
+  return null;
+};
+
+export const createCardLossEvent = (prev: GameState, next: GameState, action: GameAction): CardLossEvent | null => {
+  for (const nextPlayer of next.players) {
+    const prevPlayer = prev.players.find((player) => player.id === nextPlayer.id);
+    if (!prevPlayer) continue;
+    if (nextPlayer.cards.length >= prevPlayer.cards.length) continue;
+    return {
+      id: `loss-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      playerId: nextPlayer.id,
+      playerName: nextPlayer.name,
+      actionType: action.type,
+      eliminated: liveCardCount(prev, nextPlayer.id) > 0 && liveCardCount(next, nextPlayer.id) === 0,
     };
   }
   return null;
@@ -501,7 +690,7 @@ const targetNameForAction = (state: GameState, action: PrimaryGameAction): strin
 };
 
 const createPayoffEvent = (prev: GameState, next: GameState, action: GameAction): PayoffEvent | null => {
-  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep') {
+  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep' || action.type === 'chooseReplacementCard' || action.type === 'chooseCounterChallenge') {
     return null;
   }
   const humanId = next.config.humanPlayerId;
@@ -537,7 +726,7 @@ const createPayoffEvent = (prev: GameState, next: GameState, action: GameAction)
 };
 
 const createFlavorEvent = (prev: GameState, next: GameState, action: GameAction): FlavorEvent | null => {
-  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep') {
+  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep' || action.type === 'chooseReplacementCard' || action.type === 'chooseCounterChallenge') {
     return null;
   }
   if (action.type !== 'challenge' && action.type !== 'block' && action.actorId !== next.config.humanPlayerId) {
@@ -577,7 +766,7 @@ const createGameSummary = (state: GameState): GameSummary => {
   const fallback: LogRef = { key: 'gameStarted', values: undefined };
 
   return {
-    roundCount: Math.max(1, Math.floor(state.log.length / Math.max(1, state.players.length)) + 1),
+    roundCount: Math.floor(state.turnCount / Math.max(1, state.players.length)) + 1,
     humanBluffsCalled,
     humanBluffsCaught,
     mostDamagingAction: damageEntry
@@ -590,7 +779,7 @@ const createGameSummary = (state: GameState): GameSummary => {
 };
 
 const createCoinEvent = (prev: GameState, next: GameState, action: GameAction): CoinEvent | null => {
-  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep') {
+  if (action.type === 'chooseRevealCard' || action.type === 'chooseExchangeKeep' || action.type === 'chooseReplacementCard' || action.type === 'chooseCounterChallenge') {
     return null;
   }
   const moneyAction = action.type === 'challenge' ? action.originalAction : action;

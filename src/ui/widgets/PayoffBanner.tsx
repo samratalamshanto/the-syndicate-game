@@ -44,12 +44,12 @@ export const PayoffBanner = ({ event, onDone }: Props) => {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[85] px-0 sm:bottom-auto sm:top-[18vh] sm:px-4">
-      <div className={`bottom-sheet mx-auto grid max-w-4xl justify-items-center gap-1 rounded-t-2xl border-2 bg-night/95 px-5 py-5 text-center shadow-gold sm:rounded-2xl sm:px-6 ${content.className}`}>
+      <div className={`bottom-sheet surface-strong mx-auto grid max-w-4xl justify-items-center gap-1 rounded-t-2xl border-2 px-5 py-5 text-center shadow-gold sm:rounded-2xl sm:px-6 ${content.className}`}>
         <div className="inline-flex items-center gap-2 font-display text-2xl font-black uppercase tracking-[0.16em] sm:text-3xl">
           {content.icon}
           {content.title}
         </div>
-        <p className="text-sm font-black uppercase tracking-widest text-paper/80">{content.line}</p>
+        <p className="text-app-muted text-sm font-black uppercase tracking-widest">{content.line}</p>
       </div>
     </div>
   );

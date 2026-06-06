@@ -2,6 +2,7 @@ import type { CharacterCard, PendingChoice } from '../../domain/game/types';
 import { translations } from '../../i18n/translations';
 import { useGameStore } from '../../store/useGameStore';
 import { GameCard } from './GameCard';
+import { Modal } from './Modal';
 
 type Props = {
   cards: CharacterCard[];
@@ -11,7 +12,9 @@ type Props = {
   onPick: (cardId: string) => void;
 };
 
-const causeKey: Record<Props['cause'], keyof (typeof translations)['en']['common']> = {
+type CauseTextKey = 'causeChallenge' | 'causeAttack' | 'causeEliminate' | 'causeBlock';
+
+const causeKey: Record<Props['cause'], CauseTextKey> = {
   challenge_lost: 'causeChallenge',
   attack: 'causeAttack',
   eliminate: 'causeEliminate',
@@ -23,18 +26,18 @@ export const ChooseRevealPrompt = ({ cards, cause, mode, detail, onPick }: Props
   const t = translations[language];
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-black/70 backdrop-blur-sm sm:place-items-center">
-      <div className="bottom-sheet surface-strong grid w-full max-w-lg gap-4 rounded-t-2xl border-2 border-ember px-5 py-5 text-center shadow-card sm:rounded-2xl">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-ember">{t.common.cardAtRisk}</p>
-          <h3 className="font-display text-2xl font-black">
-            {mode === 'returnToDeck' ? t.common.chooseLoseTitle : t.common.chooseRevealTitle}
-          </h3>
-          <p className="text-app-muted text-sm">{t.common[causeKey[cause]]}</p>
-          <p className="mt-2 rounded-full border border-ember/40 bg-ember/15 px-3 py-1 text-sm font-black text-ember">
-            {detail}
-          </p>
-        </div>
+    <Modal
+      open
+      onClose={() => {}}
+      dismissible={false}
+      title={mode === 'returnToDeck' ? t.common.chooseLoseTitle : t.common.chooseRevealTitle}
+      subtitle={t.common[causeKey[cause]]}
+      size="sm"
+    >
+      <div className="grid gap-4 text-center">
+        <p className="rounded-full border border-ember/40 bg-ember/15 px-3 py-1 text-sm font-black text-ember">
+          {detail}
+        </p>
         <div className="flex justify-center gap-3">
           {cards.map((card) => (
             <button
@@ -49,6 +52,6 @@ export const ChooseRevealPrompt = ({ cards, cause, mode, detail, onPick }: Props
           ))}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };

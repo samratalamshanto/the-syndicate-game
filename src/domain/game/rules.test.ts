@@ -77,6 +77,7 @@ const riggedState = (): GameState => ({
     { id: 'd3', role: 'reporter', status: 'alive' },
   ],
   log: [],
+  turnCount: 0,
   botMemory: {},
   pendingChoice: null,
 });
@@ -131,7 +132,7 @@ describe('game engine', () => {
       type: 'eliminate',
       actorId: 'player-1',
       targetId: 'player-2',
-    });
+    }, () => 1);
 
     expect(next.players[0].money).toBe(2);
     expect(next.players[1].cards).toEqual([{ id: 'c3', role: 'thief', status: 'revealed' }]);
@@ -167,17 +168,44 @@ describe('game engine', () => {
     expect(next.players[0].cards.some((card) => card.id === 'd1')).toBe(true);
   });
 
+  it('pauses for a human replacement choice after proving a challenged role', () => {
+    const next = resolveAction(riggedState(), {
+      type: 'challenge',
+      actorId: 'player-1',
+      challengerId: 'player-2',
+      claimedRole: 'leader',
+      originalAction: { type: 'tax', actorId: 'player-1' },
+    });
+
+    expect(next.pendingChoice).toMatchObject({
+      kind: 'replaceProvenCard',
+      playerId: 'player-1',
+      offered: [
+        { id: 'd1', role: 'leader', status: 'alive' },
+        { id: 'd2', role: 'officer', status: 'alive' },
+      ],
+      followUp: { type: 'tax', actorId: 'player-1' },
+    });
+    expect(next.players[0].cards.some((card) => card.id === 'd1')).toBe(false);
+
+    const afterChoice = resolveAction(next, { type: 'chooseReplacementCard', playerId: 'player-1', cardId: 'd2' });
+
+    expect(afterChoice.pendingChoice).toBeNull();
+    expect(afterChoice.players[0].cards.some((card) => card.id === 'd2')).toBe(true);
+    expect(afterChoice.players[0].money).toBe(10);
+  });
+
   it('can apply Minister attack after a failed challenge for one revealed and one hidden target loss', () => {
     const afterChallenge = resolveChallenge(riggedState(), {
       actorId: 'player-1',
       challengerId: 'player-2',
       claimedRole: 'officer',
-    });
+    }, () => 0);
     const afterAttack = resolveAction(afterChallenge, {
       type: 'attack',
       actorId: 'player-1',
       targetId: 'player-2',
-    });
+    }, () => 1);
 
     expect(afterAttack.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(1);
     expect(afterAttack.deck.at(-1)).toEqual({ id: 'c4', role: 'helper', status: 'alive' });
@@ -213,6 +241,113 @@ describe('game engine', () => {
     expect(afterExchange.players[0].cards).toHaveLength(2);
     expect(afterExchange.pendingChoice?.kind).toBe('exchangeKeep');
     expect(afterExchange.deck.length).toBe(1);
+  });
+
+  it('pauses for an actor counter-challenge when a block is claimed', () => {
+    const next = resolveAction(riggedState(), {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-3',
+      blockingRole: 'leader',
+      originalAction: { type: 'fundRaise', actorId: 'player-1' },
+    });
+
+    expect(next.pendingChoice).toMatchObject({
+      kind: 'counterChallenge',
+      playerId: 'player-1',
+      blockerId: 'player-3',
+      blockingRole: 'leader',
+    });
+    expect(next.currentPlayerId).toBe('player-1');
+  });
+
+  it('lets the actor pass on a counter-challenge so the block succeeds', () => {
+    const pending = resolveAction(riggedState(), {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-3',
+      blockingRole: 'leader',
+      originalAction: { type: 'fundRaise', actorId: 'player-1' },
+    });
+    const next = resolveAction(pending, {
+      type: 'chooseCounterChallenge',
+      playerId: 'player-1',
+      challenge: false,
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[0].money).toBe(9);
+    expect(next.log.at(-1)?.messageKey).toBe('block.success');
+  });
+
+  it('continues the original action when a false block is counter-challenged', () => {
+    const pending = resolveAction(riggedState(), {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-2',
+      blockingRole: 'leader',
+      originalAction: { type: 'fundRaise', actorId: 'player-1' },
+    });
+    const next = resolveAction(pending, {
+      type: 'chooseCounterChallenge',
+      playerId: 'player-1',
+      challenge: true,
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(1);
+    expect(next.players[0].money).toBe(10);
+    expect(next.log.at(-2)?.messageKey).toBe('challenge.actorLost');
+    expect(next.log.at(-1)?.messageKey).toBe('action.fundRaise');
+  });
+
+  it('punishes the actor when a true block is counter-challenged', () => {
+    const pending = resolveAction(riggedState(), {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-3',
+      blockingRole: 'leader',
+      originalAction: { type: 'fundRaise', actorId: 'player-1' },
+    });
+    const next = resolveAction(pending, {
+      type: 'chooseCounterChallenge',
+      playerId: 'player-1',
+      challenge: true,
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[0].cards.filter((card) => card.status === 'revealed')).toHaveLength(1);
+    expect(next.players[0].money).toBe(9);
+    expect(next.log.at(-1)?.messageKey).toBe('challenge.challengerLost');
+  });
+
+  it('pauses for a block-lost reveal choice with the claimed blocking role', () => {
+    const pending = resolveAction(riggedState(), {
+      type: 'block',
+      actorId: 'player-2',
+      blockerId: 'player-1',
+      blockingRole: 'reporter',
+      originalAction: { type: 'attack', actorId: 'player-2', targetId: 'player-1' },
+    });
+    const next = resolveAction(pending, {
+      type: 'chooseCounterChallenge',
+      playerId: 'player-2',
+      challenge: true,
+    });
+
+    expect(next.pendingChoice).toMatchObject({
+      kind: 'revealCard',
+      playerId: 'player-1',
+      cause: 'block_lost',
+      mode: 'reveal',
+      followUp: { type: 'attack', actorId: 'player-2', targetId: 'player-1' },
+      source: {
+        actorId: 'player-2',
+        actionType: 'challenge',
+        claimedRole: 'reporter',
+      },
+    });
+    expect(next.log.at(-1)?.messageKey).toBe('challenge.actorLost');
   });
 
   it('declares a winner when only one player has live cards', () => {
@@ -298,7 +433,7 @@ describe('game engine', () => {
       type: 'chooseRevealCard',
       playerId: 'player-1',
       cardId: 'c2',
-    });
+    }, () => 1);
 
     expect(next.pendingChoice).toBeNull();
     expect(next.players[0].cards.find((card) => card.id === 'c2')).toBeUndefined();
@@ -337,13 +472,15 @@ describe('game engine', () => {
       type: 'attack',
       actorId: 'player-2',
       targetId: 'player-1',
-    });
+    }, () => 1);
 
+    let randomIndex = 0;
+    const pickFirstThenAppend = () => (randomIndex++ === 0 ? 0 : 1);
     const afterBotAttack = resolveAction(riggedState(), {
       type: 'attack',
       actorId: 'player-1',
       targetId: 'player-2',
-    });
+    }, pickFirstThenAppend);
 
     expect(afterHumanAttack.pendingChoice).toBeNull();
     expect(afterHumanAttack.players[0].cards).toEqual([{ id: 'c1', role: 'leader', status: 'revealed' }]);
@@ -375,13 +512,76 @@ describe('game engine', () => {
       type: 'chooseExchangeKeep',
       playerId: 'player-1',
       keepCardIds: ['c1', 'd1'],
-    });
+    }, () => 1);
 
     expect(next.pendingChoice).toBeNull();
     expect(next.players[0].cards.map((card) => card.id)).toEqual(['c1', 'd1']);
     expect(next.deck.map((card) => card.id)).toEqual(['d3', 'c2', 'd2']);
     expect(next.log.at(-1)?.messageKey).toBe('action.exchange');
     expect(next.currentPlayerId).toBe('player-2');
+  });
+
+  it('can append returned cards with random 1 for the old deck-order contract', () => {
+    const next = resolveChallenge(riggedState(), {
+      actorId: 'player-1',
+      challengerId: 'player-2',
+      claimedRole: 'leader',
+    }, () => 1);
+
+    expect(next.deck.at(-1)).toEqual({ id: 'c1', role: 'leader', status: 'alive' });
+  });
+
+  it('does not keep proven returned cards predictably at the bottom of a larger deck', () => {
+    const bottomReturns = Array.from({ length: 200 }).filter((_, index) => {
+      const state = riggedState();
+      state.deck = Array.from({ length: 12 }, (__, deckIndex) => ({
+        id: `d${deckIndex + 1}`,
+        role: 'reporter' as const,
+        status: 'alive' as const,
+      }));
+      const random = () => (index % 200) / 200;
+      const next = resolveChallenge(state, {
+        actorId: 'player-1',
+        challengerId: 'player-2',
+        claimedRole: 'leader',
+      }, random);
+
+      return next.deck.at(-1)?.id === 'c1';
+    }).length;
+
+    expect(bottomReturns).toBeLessThan(60);
+  });
+
+  it('picks forced bot challenge reveals from both live card slots', () => {
+    const counts = { thief: 0, helper: 0 };
+
+    for (let index = 0; index < 200; index += 1) {
+      const state = riggedState();
+      state.currentPlayerId = 'player-2';
+      const next = resolveChallenge(state, {
+        actorId: 'player-2',
+        challengerId: 'player-1',
+        claimedRole: 'leader',
+      }, () => (index % 2 === 0 ? 0 : 0.99));
+      const revealed = next.players[1].cards.find((card) => card.status === 'revealed');
+      if (revealed?.role === 'thief' || revealed?.role === 'helper') {
+        counts[revealed.role] += 1;
+      }
+    }
+
+    expect(counts.thief).toBeGreaterThan(60);
+    expect(counts.helper).toBeGreaterThan(60);
+  });
+
+  it('picks the first auto-return card with random 0 for the old slot contract', () => {
+    let randomIndex = 0;
+    const next = resolveAction(riggedState(), {
+      type: 'attack',
+      actorId: 'player-1',
+      targetId: 'player-2',
+    }, () => (randomIndex++ === 0 ? 0 : 1));
+
+    expect(next.deck.at(-1)).toEqual({ id: 'c3', role: 'thief', status: 'alive' });
   });
 
   it('ignores invalid exchange selections', () => {
@@ -393,5 +593,36 @@ describe('game engine', () => {
     });
 
     expect(next).toEqual(pending);
+  });
+
+  it('tracks completed turns independently from log length', () => {
+    let state = riggedState();
+
+    for (let index = 0; index < 8; index += 1) {
+      state = resolveAction(state, { type: 'income', actorId: state.currentPlayerId });
+    }
+
+    expect(state.turnCount).toBe(8);
+    expect(Math.floor(state.turnCount / state.players.length) + 1).toBe(3);
+  });
+
+  it('counts a challenge-heavy turn once after the reveal choice resolves', () => {
+    const state = riggedState();
+    state.players[0].cards = [
+      { id: 'c1', role: 'thief', status: 'alive' },
+      { id: 'c2', role: 'helper', status: 'alive' },
+    ];
+    const pending = resolveAction(state, {
+      type: 'challenge',
+      actorId: 'player-1',
+      challengerId: 'player-2',
+      claimedRole: 'leader',
+      originalAction: { type: 'tax', actorId: 'player-1' },
+    });
+    const next = resolveAction(pending, { type: 'chooseRevealCard', playerId: 'player-1', cardId: 'c1' });
+
+    expect(pending.turnCount).toBe(0);
+    expect(next.turnCount).toBe(1);
+    expect(next.currentPlayerId).toBe('player-2');
   });
 });

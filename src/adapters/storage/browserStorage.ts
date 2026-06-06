@@ -11,7 +11,8 @@ const decode = <T>(value: string): T => JSON.parse(decodeURIComponent(atob(value
 export const browserStorage: GameStorage = {
   loadGame() {
     const saved = localStorage.getItem(gameKey);
-    return saved ? decode<GameState>(saved) : null;
+    const game = saved ? decode<GameState & { turnCount?: number }>(saved) : null;
+    return game ? { ...game, turnCount: game.turnCount ?? 0 } : null;
   },
   saveGame(state) {
     localStorage.setItem(gameKey, encode(state));

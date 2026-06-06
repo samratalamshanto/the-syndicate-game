@@ -18,6 +18,7 @@ export type GameConfig = {
   cardsPerPlayer: number;
   roleCopies: Record<RoleId, number>;
   botDifficulty: BotDifficulty;
+  seed?: string;
 };
 
 export type CharacterCard = {
@@ -61,6 +62,19 @@ export type PendingChoice =
       kind: 'exchangeKeep';
       playerId: string;
       offered: CharacterCard[];
+    }
+  | {
+      kind: 'replaceProvenCard';
+      playerId: string;
+      offered: CharacterCard[];
+      followUp: PrimaryGameAction | null;
+    }
+  | {
+      kind: 'counterChallenge';
+      playerId: string;
+      blockerId: string;
+      blockingRole: RoleId;
+      originalAction: PrimaryGameAction;
     };
 
 export type GameState = {
@@ -72,6 +86,7 @@ export type GameState = {
   players: Player[];
   deck: CharacterCard[];
   log: GameLogEntry[];
+  turnCount: number;
   botMemory: BotMemory;
   pendingChoice: PendingChoice;
 };
@@ -111,7 +126,9 @@ export type GameAction =
   | { type: 'challenge'; actorId: string; challengerId: string; claimedRole: RoleId; originalAction: PrimaryGameAction }
   | { type: 'block'; actorId: string; blockerId: string; blockingRole: RoleId; originalAction: PrimaryGameAction }
   | { type: 'chooseRevealCard'; playerId: string; cardId: string }
-  | { type: 'chooseExchangeKeep'; playerId: string; keepCardIds: string[] };
+  | { type: 'chooseExchangeKeep'; playerId: string; keepCardIds: string[] }
+  | { type: 'chooseReplacementCard'; playerId: string; cardId: string }
+  | { type: 'chooseCounterChallenge'; playerId: string; challenge: boolean };
 
 export type Challenge = {
   actorId: string;

@@ -10,6 +10,7 @@ import type {
   PrimaryGameAction,
   RoleId,
 } from './types';
+import { seededRandom } from './random';
 
 type RandomSource = () => number;
 
@@ -22,7 +23,7 @@ const actionRoles: Partial<Record<GameAction['type'], RoleId>> = {
 
 export const requiredRoleForAction = (actionType: GameAction['type']) => actionRoles[actionType] ?? null;
 
-export const createGame = (config: GameConfig, random: RandomSource = Math.random): GameState => {
+export const createGame = (config: GameConfig, random: RandomSource = config.seed ? seededRandom(config.seed) : Math.random): GameState => {
   const deck = shuffle(createDeck(config), random);
   const players: Player[] = Array.from({ length: config.playerCount }, (_, index) => {
     const id = `player-${index + 1}`;
@@ -45,6 +46,7 @@ export const createGame = (config: GameConfig, random: RandomSource = Math.rando
     players,
     deck,
     log: [log('gameStarted')],
+    turnCount: 0,
     botMemory: {},
     pendingChoice: null,
   };
@@ -72,23 +74,41 @@ export const getPlayerView = (state: GameState, viewerId: string): PlayerView =>
   }),
 });
 
-export const resolveAction = (state: GameState, action: GameAction): GameState => {
+export const resolveAction = (state: GameState, action: GameAction, random: RandomSource = Math.random): GameState => {
   const next = cloneState(state);
   if (action.type === 'chooseRevealCard') {
     const turnOwnerId = next.currentPlayerId;
-    applyRevealChoice(next, action);
+    applyRevealChoice(next, action, random);
     settleAfterAction(next);
     if (next.phase !== 'complete' && state.pendingChoice !== null && next.pendingChoice === null) {
-      next.currentPlayerId = nextAlivePlayerId(next, turnOwnerId);
+      advanceTurn(next, turnOwnerId);
     }
     return next;
   }
   if (action.type === 'chooseExchangeKeep') {
     const turnOwnerId = next.currentPlayerId;
-    applyExchangeChoice(next, action);
+    applyExchangeChoice(next, action, random);
     settleAfterAction(next);
     if (next.phase !== 'complete' && state.pendingChoice !== null && next.pendingChoice === null) {
-      next.currentPlayerId = nextAlivePlayerId(next, turnOwnerId);
+      advanceTurn(next, turnOwnerId);
+    }
+    return next;
+  }
+  if (action.type === 'chooseReplacementCard') {
+    const turnOwnerId = next.currentPlayerId;
+    applyReplacementChoice(next, action, random);
+    settleAfterAction(next);
+    if (next.phase !== 'complete' && state.pendingChoice !== null && next.pendingChoice === null) {
+      advanceTurn(next, turnOwnerId);
+    }
+    return next;
+  }
+  if (action.type === 'chooseCounterChallenge') {
+    const turnOwnerId = next.currentPlayerId;
+    applyCounterChallengeChoice(next, action, random);
+    settleAfterAction(next);
+    if (next.phase !== 'complete' && state.pendingChoice !== null && next.pendingChoice === null) {
+      advanceTurn(next, turnOwnerId);
     }
     return next;
   }
@@ -100,28 +120,29 @@ export const resolveAction = (state: GameState, action: GameAction): GameState =
   }
 
   if (action.type === 'challenge') {
-    applyChallengeAction(next, action);
+    applyChallengeAction(next, action, random);
   } else if (action.type === 'block') {
     const blocker = findPlayer(next, action.blockerId);
     const originalActor = findPlayer(next, action.originalAction.actorId);
-    next.log.push(log('block.success', {
-      actor: originalActor.name,
-      blocker: blocker.name,
-      role: action.blockingRole,
-    }));
-    // TODO: actor counter-challenge.
+    next.pendingChoice = {
+      kind: 'counterChallenge',
+      playerId: originalActor.id,
+      blockerId: blocker.id,
+      blockingRole: action.blockingRole,
+      originalAction: action.originalAction,
+    };
   } else {
-    applyPrimaryAction(next, action);
+    applyPrimaryAction(next, action, random);
   }
 
   settleAfterAction(next);
   if (!next.winnerId && next.pendingChoice === null) {
-    next.currentPlayerId = nextAlivePlayerId(next, actor.id);
+    advanceTurn(next, actor.id);
   }
   return next;
 };
 
-const applyPrimaryAction = (state: GameState, action: PrimaryGameAction) => {
+const applyPrimaryAction = (state: GameState, action: PrimaryGameAction, random: RandomSource) => {
   const actor = findPlayer(state, action.actorId);
   switch (action.type) {
     case 'income':
@@ -140,7 +161,7 @@ const applyPrimaryAction = (state: GameState, action: PrimaryGameAction) => {
       applySteal(state, actor, action.targetId);
       break;
     case 'exchange':
-      applyExchange(state, actor);
+      applyExchange(state, actor, random);
       break;
     case 'attack':
       spend(actor, 3);
@@ -148,7 +169,7 @@ const applyPrimaryAction = (state: GameState, action: PrimaryGameAction) => {
         actorId: actor.id,
         actionType: action.type,
         claimedRole: requiredRoleForAction(action.type) ?? undefined,
-      })) {
+      }, random)) {
         return;
       }
       state.log.push(log('action.attack', { actor: actor.name, target: findPlayer(state, action.targetId).name }));
@@ -158,7 +179,7 @@ const applyPrimaryAction = (state: GameState, action: PrimaryGameAction) => {
       if (requestRevealCard(state, findPlayer(state, action.targetId), 'eliminate', 'returnToDeck', null, {
         actorId: actor.id,
         actionType: action.type,
-      })) {
+      }, random)) {
         return;
       }
       state.log.push(log('action.eliminate', { actor: actor.name, target: findPlayer(state, action.targetId).name }));
@@ -166,7 +187,7 @@ const applyPrimaryAction = (state: GameState, action: PrimaryGameAction) => {
   }
 };
 
-const applyChallengeAction = (state: GameState, action: Extract<GameAction, { type: 'challenge' }>) => {
+const applyChallengeAction = (state: GameState, action: Extract<GameAction, { type: 'challenge' }>, random: RandomSource) => {
   const actor = findPlayer(state, action.actorId);
   const challenger = findPlayer(state, action.challengerId);
   const provenCard = liveCards(actor).find((card) => card.role === action.claimedRole);
@@ -176,7 +197,7 @@ const applyChallengeAction = (state: GameState, action: Extract<GameAction, { ty
       actorId: challenger.id,
       actionType: 'challenge',
       claimedRole: action.claimedRole,
-    })) {
+    }, random)) {
       return;
     }
     state.log.push(log('challenge.actorLost', { actor: actor.name, challenger: challenger.name, role: action.claimedRole }));
@@ -187,29 +208,37 @@ const applyChallengeAction = (state: GameState, action: Extract<GameAction, { ty
     actorId: actor.id,
     actionType: 'challenge',
     claimedRole: action.claimedRole,
-  })) {
+  }, random)) {
     return;
   }
-  replaceProvenCard(state, actor, provenCard);
   state.log.push(log('challenge.challengerLost', { actor: actor.name, challenger: challenger.name, role: action.claimedRole }));
 
   if (!isEliminated(challenger)) {
-    applyPrimaryAction(state, action.originalAction);
+    if (requestReplacementCard(state, actor, provenCard, action.originalAction, random)) {
+      return;
+    }
+    replaceProvenCard(state, actor, provenCard, random);
+    applyPrimaryAction(state, action.originalAction, random);
+    return;
   }
+  if (requestReplacementCard(state, actor, provenCard, null, random)) {
+    return;
+  }
+  replaceProvenCard(state, actor, provenCard, random);
 };
 
-export const resolveChallenge = (state: GameState, challenge: Challenge): GameState => {
+export const resolveChallenge = (state: GameState, challenge: Challenge, random: RandomSource = Math.random): GameState => {
   const next = cloneState(state);
   const actor = findPlayer(next, challenge.actorId);
   const challenger = findPlayer(next, challenge.challengerId);
   const provenCard = liveCards(actor).find((card) => card.role === challenge.claimedRole);
 
   if (!provenCard) {
-    revealOneCard(actor);
+    revealOneCard(actor, random);
     next.log.push(log('challenge.actorLost', { actor: actor.name, challenger: challenger.name }));
   } else {
-    revealOneCard(challenger);
-    replaceProvenCard(next, actor, provenCard);
+    revealOneCard(challenger, random);
+    replaceProvenCard(next, actor, provenCard, random);
     next.log.push(log('challenge.challengerLost', { actor: actor.name, challenger: challenger.name }));
   }
 
@@ -237,6 +266,15 @@ const shuffle = <T>(items: T[], random: RandomSource) => {
   return copy;
 };
 
+const insertRandom = (deck: CharacterCard[], card: CharacterCard, random: RandomSource) => {
+  const index = Math.min(deck.length, Math.floor(random() * (deck.length + 1)));
+  deck.splice(index, 0, card);
+};
+
+const insertAllRandom = (deck: CharacterCard[], cards: CharacterCard[], random: RandomSource) => {
+  cards.forEach((card) => insertRandom(deck, card, random));
+};
+
 const addMoney = (money: number, amount: number, maxMoney: number) => Math.min(maxMoney, money + amount);
 
 const spend = (player: Player, amount: number) => {
@@ -251,7 +289,7 @@ const applySteal = (state: GameState, actor: Player, targetId: string) => {
   state.log.push(log('action.steal', { actor: actor.name, target: target.name, amount }));
 };
 
-const applyExchange = (state: GameState, actor: Player) => {
+const applyExchange = (state: GameState, actor: Player, random: RandomSource) => {
   const drawn = state.deck.splice(0, 2);
   const alive = liveCards(actor);
   if (actor.kind === 'human' && alive.length > 0) {
@@ -261,22 +299,44 @@ const applyExchange = (state: GameState, actor: Player) => {
   const keep = [...alive, ...drawn].slice(0, alive.length);
   const returned = [...alive, ...drawn].slice(alive.length);
   actor.cards = [...actor.cards.filter((card) => card.status === 'revealed'), ...keep];
-  state.deck.push(...returned.map((card) => ({ ...card, status: 'alive' as const })));
+  insertAllRandom(state.deck, returned.map((card) => ({ ...card, status: 'alive' as const })), random);
   state.log.push(log('action.exchange', { actor: actor.name }));
 };
 
-const replaceProvenCard = (state: GameState, actor: Player, provenCard: CharacterCard) => {
+const replaceProvenCard = (state: GameState, actor: Player, provenCard: CharacterCard, random: RandomSource) => {
   const replacement = state.deck.shift();
   if (!replacement) {
     return;
   }
   const cardIndex = actor.cards.findIndex((card) => card.id === provenCard.id);
   actor.cards[cardIndex] = replacement;
-  state.deck.push({ ...provenCard, status: 'alive' });
+  insertRandom(state.deck, { ...provenCard, status: 'alive' }, random);
 };
 
-const revealOneCard = (player: Player) => {
-  const card = liveCards(player)[0];
+const requestReplacementCard = (
+  state: GameState,
+  actor: Player,
+  provenCard: CharacterCard,
+  followUp: PrimaryGameAction | null,
+  random: RandomSource,
+) => {
+  if (actor.kind !== 'human' || state.deck.length === 0) {
+    return false;
+  }
+  const cardIndex = actor.cards.findIndex((card) => card.id === provenCard.id && card.status === 'alive');
+  if (cardIndex < 0) {
+    return false;
+  }
+  actor.cards.splice(cardIndex, 1);
+  const offered = state.deck.splice(0, Math.min(2, state.deck.length));
+  insertRandom(state.deck, { ...provenCard, status: 'alive' }, random);
+  state.pendingChoice = { kind: 'replaceProvenCard', playerId: actor.id, offered, followUp };
+  return true;
+};
+
+const revealOneCard = (player: Player, random: RandomSource) => {
+  const alive = liveCards(player);
+  const card = alive[Math.min(alive.length - 1, Math.floor(random() * alive.length))];
   if (card) {
     card.status = 'revealed';
   }
@@ -285,10 +345,11 @@ const revealOneCard = (player: Player) => {
 const requestRevealCard = (
   state: GameState,
   player: Player,
-  cause: Exclude<NonNullable<GameState['pendingChoice']>, { kind: 'exchangeKeep' }>['cause'],
+  cause: Extract<NonNullable<GameState['pendingChoice']>, { kind: 'revealCard' }>['cause'],
   mode: Extract<NonNullable<GameState['pendingChoice']>, { kind: 'revealCard' }>['mode'],
   followUp: PrimaryGameAction | null,
   source: Extract<NonNullable<GameState['pendingChoice']>, { kind: 'revealCard' }>['source'],
+  random: RandomSource,
 ) => {
   const alive = liveCards(player);
   if (player.kind === 'human' && alive.length > 1) {
@@ -296,9 +357,10 @@ const requestRevealCard = (
     return true;
   }
   if (mode === 'returnToDeck') {
-    returnCardToDeck(state, player, alive[0]?.id);
+    const card = alive[Math.min(alive.length - 1, Math.floor(random() * alive.length))];
+    returnCardToDeck(state, player, card?.id, random);
   } else {
-    revealOneCard(player);
+    revealOneCard(player, random);
   }
   return false;
 };
@@ -306,6 +368,7 @@ const requestRevealCard = (
 const applyRevealChoice = (
   state: GameState,
   action: Extract<GameAction, { type: 'chooseRevealCard' }>,
+  random: RandomSource,
 ) => {
   const pending = state.pendingChoice;
   if (pending?.kind !== 'revealCard' || pending.playerId !== action.playerId) {
@@ -317,23 +380,37 @@ const applyRevealChoice = (
     return;
   }
   if (pending.mode === 'returnToDeck') {
-    returnCardToDeck(state, player, card.id);
+    returnCardToDeck(state, player, card.id, random);
   } else {
     card.status = 'revealed';
   }
   state.pendingChoice = null;
+  if (pending.cause === 'block_lost') {
+    if (pending.followUp && !isEliminated(player)) {
+      applyPrimaryAction(state, pending.followUp, random);
+    }
+    return;
+  }
   if (pending.followUp && !isEliminated(player)) {
     const actor = findPlayer(state, pending.followUp.actorId);
     const provenCard = liveCards(actor).find((candidate) => candidate.role === requiredRoleForAction(pending.followUp!.type));
     if (provenCard) {
-      replaceProvenCard(state, actor, provenCard);
+      if (requestReplacementCard(state, actor, provenCard, pending.followUp, random)) {
+        state.log.push(log('challenge.challengerLost', {
+          actor: actor.name,
+          challenger: player.name,
+          role: requiredRoleForAction(pending.followUp.type) ?? '',
+        }));
+        return;
+      }
+      replaceProvenCard(state, actor, provenCard, random);
     }
     state.log.push(log('challenge.challengerLost', {
       actor: actor.name,
       challenger: player.name,
       role: requiredRoleForAction(pending.followUp.type) ?? '',
     }));
-    applyPrimaryAction(state, pending.followUp);
+    applyPrimaryAction(state, pending.followUp, random);
     return;
   }
   const entry = revealLogEntry(state, pending.cause, player);
@@ -342,7 +419,29 @@ const applyRevealChoice = (
   }
 };
 
-const returnCardToDeck = (state: GameState, player: Player, cardId: string | undefined) => {
+const applyReplacementChoice = (
+  state: GameState,
+  action: Extract<GameAction, { type: 'chooseReplacementCard' }>,
+  random: RandomSource,
+) => {
+  const pending = state.pendingChoice;
+  if (pending?.kind !== 'replaceProvenCard' || pending.playerId !== action.playerId) {
+    return;
+  }
+  const player = findPlayer(state, action.playerId);
+  const selected = pending.offered.find((card) => card.id === action.cardId);
+  if (!selected) {
+    return;
+  }
+  player.cards.push({ ...selected, status: 'alive' });
+  insertAllRandom(state.deck, pending.offered.filter((card) => card.id !== selected.id).map((card) => ({ ...card, status: 'alive' as const })), random);
+  state.pendingChoice = null;
+  if (pending.followUp && !isEliminated(player)) {
+    applyPrimaryAction(state, pending.followUp, random);
+  }
+};
+
+const returnCardToDeck = (state: GameState, player: Player, cardId: string | undefined, random: RandomSource) => {
   if (!cardId) {
     return;
   }
@@ -351,12 +450,13 @@ const returnCardToDeck = (state: GameState, player: Player, cardId: string | und
     return;
   }
   const [card] = player.cards.splice(cardIndex, 1);
-  state.deck.push({ ...card, status: 'alive' });
+  insertRandom(state.deck, { ...card, status: 'alive' }, random);
 };
 
 const applyExchangeChoice = (
   state: GameState,
   action: Extract<GameAction, { type: 'chooseExchangeKeep' }>,
+  random: RandomSource,
 ) => {
   const pending = state.pendingChoice;
   if (pending?.kind !== 'exchangeKeep' || pending.playerId !== action.playerId) {
@@ -373,14 +473,69 @@ const applyExchangeChoice = (
   const keep = candidates.filter((card) => keepIds.has(card.id)).map((card) => ({ ...card, status: 'alive' as const }));
   const returned = candidates.filter((card) => !keepIds.has(card.id)).map((card) => ({ ...card, status: 'alive' as const }));
   player.cards = [...player.cards.filter((card) => card.status === 'revealed'), ...keep];
-  state.deck.push(...returned);
+  insertAllRandom(state.deck, returned, random);
   state.pendingChoice = null;
   state.log.push(log('action.exchange', { actor: player.name }));
 };
 
+const applyCounterChallengeChoice = (
+  state: GameState,
+  action: Extract<GameAction, { type: 'chooseCounterChallenge' }>,
+  random: RandomSource,
+) => {
+  const pending = state.pendingChoice;
+  if (pending?.kind !== 'counterChallenge' || pending.playerId !== action.playerId) {
+    return;
+  }
+
+  const actor = findPlayer(state, pending.playerId);
+  const blocker = findPlayer(state, pending.blockerId);
+  state.pendingChoice = null;
+
+  if (!action.challenge) {
+    state.log.push(log('block.success', {
+      actor: actor.name,
+      blocker: blocker.name,
+      role: pending.blockingRole,
+    }));
+    return;
+  }
+
+  const provenCard = liveCards(blocker).find((card) => card.role === pending.blockingRole);
+  if (!provenCard) {
+    state.log.push(log('challenge.actorLost', {
+      actor: blocker.name,
+      challenger: actor.name,
+      role: pending.blockingRole,
+    }));
+    if (requestRevealCard(state, blocker, 'block_lost', 'reveal', pending.originalAction, {
+      actorId: actor.id,
+      actionType: 'challenge',
+      claimedRole: pending.blockingRole,
+    }, random)) {
+      return;
+    }
+    if (!isEliminated(blocker)) {
+      applyPrimaryAction(state, pending.originalAction, random);
+    }
+    return;
+  }
+
+  revealOneCard(actor, random);
+  state.log.push(log('challenge.challengerLost', {
+    actor: blocker.name,
+    challenger: actor.name,
+    role: pending.blockingRole,
+  }));
+  if (requestReplacementCard(state, blocker, provenCard, null, random)) {
+    return;
+  }
+  replaceProvenCard(state, blocker, provenCard, random);
+};
+
 const revealLogEntry = (
   state: GameState,
-  cause: Exclude<NonNullable<GameState['pendingChoice']>, { kind: 'exchangeKeep' }>['cause'],
+  cause: Extract<NonNullable<GameState['pendingChoice']>, { kind: 'revealCard' }>['cause'],
   player: Player,
 ) => {
   const actor = findPlayer(state, state.currentPlayerId);
@@ -430,6 +585,11 @@ const nextAlivePlayerId = (state: GameState, currentPlayerId: string) => {
   return currentPlayerId;
 };
 
+const advanceTurn = (state: GameState, currentPlayerId: string) => {
+  state.currentPlayerId = nextAlivePlayerId(state, currentPlayerId);
+  state.turnCount += 1;
+};
+
 const cloneState = (state: GameState): GameState => ({
   ...state,
   config: { ...state.config, roleCopies: { ...state.config.roleCopies } },
@@ -450,10 +610,23 @@ const clonePendingChoice = (pendingChoice: GameState['pendingChoice']): GameStat
       offered: pendingChoice.offered.map((card) => ({ ...card })),
     };
   }
+  if (pendingChoice?.kind === 'replaceProvenCard') {
+    return {
+      ...pendingChoice,
+      offered: pendingChoice.offered.map((card) => ({ ...card })),
+      followUp: pendingChoice.followUp ? { ...pendingChoice.followUp } : null,
+    };
+  }
   if (pendingChoice?.kind === 'revealCard') {
     return {
       ...pendingChoice,
       followUp: pendingChoice.followUp ? { ...pendingChoice.followUp } : null,
+    };
+  }
+  if (pendingChoice?.kind === 'counterChallenge') {
+    return {
+      ...pendingChoice,
+      originalAction: { ...pendingChoice.originalAction },
     };
   }
   return null;

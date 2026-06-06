@@ -1,13 +1,15 @@
-import { Bot, BookOpen, Play, RotateCcw, Trophy, Users, X } from 'lucide-react';
+import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
 import { GuidePanel } from '../widgets/GuidePanel';
 import { GameCard } from '../widgets/GameCard';
+import { Modal } from '../widgets/Modal';
 import { roleOrder } from '../../config/branding';
 import { botPersonas } from '../../config/botPersonas';
 import type { BotDifficulty } from '../../domain/game/types';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { achievementIds } from '../../application/achievementRules';
 
 const difficulties: { value: BotDifficulty; label: string; tag: string }[] = [
   { value: 'easy', label: 'Easy', tag: 'Forgiving · learn the ropes' },
@@ -20,51 +22,61 @@ export const SetupScreen = () => {
     language,
     playerCount,
     botDifficulty,
-    series,
     profile,
+    achievements,
     setPlayerCount,
     setBotDifficulty,
-    setSeriesLength,
     startGame,
     resetProfile,
   } = useGameStore();
   const t = translations[language];
   const [guideOpen, setGuideOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 640px)');
+  const unlockedCount = Object.keys(achievements.unlocked).length;
 
   return (
-    <section className="relative grid flex-1 gap-6 py-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
+    <section className="relative mx-auto grid w-full max-w-3xl flex-1 gap-6 py-6">
       {/* HERO LEFT */}
-      <div className="grid gap-7">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.32em] text-brass">a bluffing card game</p>
-          <h2 className="mt-2 font-display text-5xl font-black leading-[1.05] sm:text-6xl gold-text">{t.gameTitle}</h2>
+      <div className="grid gap-6">
+        <div className="grid gap-4">
+          <h2 className="font-display text-5xl font-black leading-[1.05] tracking-wide text-app sm:text-6xl">{t.gameTitle}</h2>
           <p className="text-app-muted mt-3 max-w-md text-base">{t.subtitle}</p>
+          <button
+            type="button"
+            onClick={() => setGuideOpen(true)}
+            className="group inline-flex w-fit items-center gap-2 text-sm font-black text-brass hover:text-accent"
+          >
+            <BookOpen size={17} />
+            <span>{t.common.guide}</span>
+            <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+          </button>
         </div>
 
         <div className="grid gap-2">
-          <button
-            type="button"
-            onClick={() => setProfileOpen((open) => !open)}
-            className="surface-control inline-flex min-h-11 w-fit flex-wrap items-center gap-2 rounded-full border px-4 py-2 text-sm font-black"
-          >
-            <Trophy size={16} className="text-brass" />
-            <span>{profile.lifetimeWins} {t.common.wins}</span>
-            <span className="text-app-muted">·</span>
-            <span>{profile.lifetimeLosses} {t.common.losses}</span>
-            <span className="text-app-muted">·</span>
-            <span>{t.common.streak} {profile.currentStreak}</span>
-            <span className="text-app-muted">·</span>
-            <span>{t.common.streakBest} {profile.bestStreak}</span>
-          </button>
+          <div className="flex flex-wrap gap-4 text-sm font-black">
+            <button type="button" onClick={() => setProfileOpen((open) => !open)} className="inline-flex items-center gap-2 text-app-muted hover:text-brass">
+              <Trophy size={15} className="text-brass" />
+              <span>{profile.lifetimeWins} {t.common.wins}</span>
+              <span>·</span>
+              <span>{profile.lifetimeLosses} {t.common.losses}</span>
+              <span>·</span>
+              <span>{t.common.streak} {profile.currentStreak}</span>
+            </button>
+            <button type="button" onClick={() => setAchievementsOpen((open) => !open)} className="inline-flex items-center gap-2 text-app-muted hover:text-brass">
+              <Award size={15} className="text-brass" />
+              {t.common.achievements}
+              <span className="text-brass">{unlockedCount}/{achievementIds.length}</span>
+            </button>
+          </div>
 
           {profileOpen ? (
             <div className="surface-glass grid max-w-xl gap-3 rounded-2xl border p-4 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="font-display text-base font-black gold-text">{t.common.lifetime}</p>
+                  <p className="font-display text-base font-black text-app">{t.common.lifetime}</p>
                   <p className="text-app-muted text-xs">
                     {t.common.matchesPlayed}: {profile.matchesPlayed}
                   </p>
@@ -102,7 +114,7 @@ export const SetupScreen = () => {
                         resetProfile();
                         setConfirmResetOpen(false);
                       }}
-                      className="min-h-11 rounded-full bg-ember px-4 py-2 text-sm font-black text-paper"
+                      className="min-h-11 rounded-full bg-danger px-4 py-2 text-sm font-black"
                     >
                       {t.common.resetProfile}
                     </button>
@@ -118,10 +130,48 @@ export const SetupScreen = () => {
               ) : null}
             </div>
           ) : null}
+
+          {achievementsOpen ? (
+            <div className="surface-glass grid max-w-xl gap-3 rounded-2xl border p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-display text-base font-black text-app">{t.common.achievements}</p>
+                <button
+                  type="button"
+                  onClick={() => setAchievementsOpen(false)}
+                  className="surface-control grid h-9 w-9 place-items-center rounded-full border"
+                  aria-label={t.common.cancel}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="grid max-h-[22rem] grid-cols-2 gap-2 overflow-auto pr-1 scroll-tight sm:grid-cols-3">
+                {achievementIds.map((id) => {
+                  const copy = t.achievements[id];
+                  const unlocked = achievements.unlocked[id] !== undefined;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      title={copy.description}
+                      className={`min-h-20 rounded-xl border p-3 text-left transition ${
+                        unlocked ? 'surface-control border-brass/55' : 'surface-muted border-token-soft text-app-muted'
+                      }`}
+                    >
+                      <span className={unlocked ? 'text-brass' : 'text-app-muted'}>
+                        {unlocked ? <Award size={16} /> : <Lock size={15} />}
+                      </span>
+                      <span className="mt-1 block font-display text-sm font-black leading-tight">{copy.name}</span>
+                      <span className="text-app-muted mt-1 line-clamp-2 block text-xs leading-snug">{copy.description}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Fanned character spread */}
-        <div className="relative h-48 sm:h-56">
+        <div className="relative h-44 overflow-visible sm:h-52">
           <div className="absolute inset-x-0 top-0 flex items-end justify-center">
             {roleOrder.map((role, idx) => {
               const center = (roleOrder.length - 1) / 2;
@@ -131,13 +181,13 @@ export const SetupScreen = () => {
                   key={role}
                   className="origin-bottom transition-transform duration-300 hover:-translate-y-3 hover:z-10"
                   style={{
-                    transform: `rotate(${offset * (isDesktop ? 7 : 4)}deg) translateY(${
-                      Math.abs(offset) * (isDesktop ? 8 : 5)
+                    transform: `rotate(${offset * (isDesktop ? 6 : 4)}deg) translateY(${
+                      Math.abs(offset) * (isDesktop ? 7 : 5)
                     }px)`,
-                    marginLeft: idx === 0 ? 0 : isDesktop ? '-1.6rem' : '-1rem',
+                    marginLeft: idx === 0 ? 0 : isDesktop ? '-1.35rem' : '-1rem',
                   }}
                 >
-                  <GameCard variant="face" role={role} size={isDesktop ? 'lg' : 'md'} />
+                  <GameCard variant="face" role={role} size={isDesktop ? 'md' : 'sm'} fresh freshDelayMs={idx * 70} />
                 </div>
               );
             })}
@@ -202,83 +252,29 @@ export const SetupScreen = () => {
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <p className="text-sm font-bold">{t.common.series}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {[
-                { value: 1 as const, label: t.common.singleGame },
-                { value: 3 as const, label: t.common.bestOf3 },
-                { value: 5 as const, label: t.common.bestOf5 },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setSeriesLength(option.value)}
-                  className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-black ${
-                    series.length === option.value
-                      ? 'border-brass bg-brass/25 shadow-gold'
-                      : 'surface-control border-token-soft'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid gap-3">
             <button
               type="button"
               onClick={startGame}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-brass px-5 py-3 font-display text-base font-black text-night shadow-gold hover:brightness-110"
+              className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-success px-6 py-4 font-display text-lg font-black text-white shadow-card hover:brightness-110"
             >
-              <Play size={18} />
+              <Play size={20} />
               {t.setup.start}
             </button>
-            <button
-              type="button"
-              onClick={() => setGuideOpen(true)}
-              className="surface-control inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-4 py-3 text-sm font-bold"
-            >
-              <BookOpen size={16} />
-              {t.common.guide}
-            </button>
           </div>
         </div>
-      </div>
 
-      {/* INLINE GUIDE on desktop */}
-      <div className="hidden lg:block">
+      </div>
+      <Modal
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        title={t.common.guide}
+        subtitle={t.common.guideTeaser}
+        icon={<BookOpen size={18} />}
+        size="lg"
+      >
         <GuidePanel />
-      </div>
-
-      {/* GUIDE OVERLAY on mobile */}
-      {guideOpen ? (
-        <div
-          className="fixed inset-0 z-50 grid place-items-end bg-black/70 p-0 backdrop-blur-sm sm:place-items-center sm:p-3"
-          onClick={() => setGuideOpen(false)}
-        >
-          <div
-            className="bottom-sheet surface-strong relative max-h-[92dvh] w-full max-w-xl overflow-auto scroll-tight rounded-t-2xl border-2 shadow-card sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="surface-strong sticky top-0 z-10 flex items-center justify-between border-b px-4 py-3">
-              <h3 className="font-display text-lg font-black gold-text">{t.common.guide}</h3>
-              <button
-                type="button"
-                onClick={() => setGuideOpen(false)}
-                className="grid h-11 w-11 place-items-center rounded-full border border-brass/40 sm:h-8 sm:w-8"
-                aria-label={t.common.cancel}
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="p-4">
-              <GuidePanel />
-            </div>
-          </div>
-        </div>
-      ) : null}
+      </Modal>
     </section>
   );
 };

@@ -4,10 +4,13 @@ import { useGameStore } from '../store/useGameStore';
 import { translations } from '../i18n/translations';
 import { GameScreen } from './screens/GameScreen';
 import { SetupScreen } from './screens/SetupScreen';
+import { AchievementToast } from './widgets/AchievementToast';
 
 export const App = () => {
-  const { game, language, theme, soundMuted, backToSetup, setLanguage, setTheme, setSoundMuted } = useGameStore();
+  const { game, language, theme, soundMuted, achievementToast, backToSetup, setLanguage, setTheme, setSoundMuted, clearAchievementToast } =
+    useGameStore();
   const t = translations[language];
+  const achievementCopy = achievementToast ? t.achievements[achievementToast.id] : null;
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -27,7 +30,7 @@ export const App = () => {
             </span>
             <div className="leading-tight">
               <p className="text-[10px] font-black uppercase tracking-[0.32em] text-brass">power · deception · elimination</p>
-              <h1 className="font-display text-2xl font-black sm:text-3xl gold-text">{t.gameTitle}</h1>
+              <h1 className="font-display text-2xl font-black tracking-wide sm:text-3xl gold-text">{t.gameTitle}</h1>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -71,6 +74,15 @@ export const App = () => {
         </header>
         {game ? <GameScreen /> : <SetupScreen />}
       </div>
+      {achievementToast && achievementCopy ? (
+        <AchievementToast
+          id={achievementToast.id}
+          eyebrow={t.common.achievementUnlocked}
+          name={achievementCopy.name}
+          description={achievementCopy.description}
+          onClose={() => clearAchievementToast(achievementToast.id)}
+        />
+      ) : null}
     </main>
   );
 };
