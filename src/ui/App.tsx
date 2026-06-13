@@ -5,6 +5,7 @@ import { translations } from '../i18n/translations';
 import { GameScreen } from './screens/GameScreen';
 import { SetupScreen } from './screens/SetupScreen';
 import { AchievementToast } from './widgets/AchievementToast';
+import { useForceLandscape } from './hooks/useForceLandscape';
 
 export const App = () => {
   const { game, language, theme, soundMuted, achievementToast, backToSetup, setLanguage, setTheme, setSoundMuted, clearAchievementToast } =
@@ -12,17 +13,19 @@ export const App = () => {
   const t = translations[language];
   const achievementCopy = achievementToast ? t.achievements[achievementToast.id] : null;
 
+  useForceLandscape();
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.lang = language;
   }, [language, theme]);
 
   return (
-    <main className="relative min-h-[100dvh] text-app">
+    <main className="app-shell relative min-h-[100dvh] text-app">
       {/* Backdrop */}
       <div className="app-backdrop absolute inset-0 -z-10" />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-3 pb-4 pt-3 sm:px-6">
+      <div className="app-frame relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-3 pb-4 pt-3 sm:px-6">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-token-soft pb-3 sm:gap-3">
           <div className="flex items-center gap-3">
             <span className="surface-strong grid h-9 w-9 place-items-center rounded-full border font-display text-lg font-black gold-text">

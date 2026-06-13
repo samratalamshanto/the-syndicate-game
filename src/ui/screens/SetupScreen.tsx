@@ -212,7 +212,7 @@ export const SetupScreen = () => {
             </label>
             <input
               type="range"
-              min={3}
+              min={4}
               max={8}
               value={playerCount}
               onChange={(e) => setPlayerCount(Number(e.target.value))}

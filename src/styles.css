@@ -577,3 +577,49 @@ select {
 .portrait-mask {
   mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
 }
+
+/* Forced landscape for phones without a native orientation lock (e.g. iOS Safari).
+   #root is rotated, so its transform also becomes the containing block for the
+   fixed-position modals/overlays inside it — they rotate along with the board. */
+@media (orientation: portrait) {
+  html.force-landscape,
+  html.force-landscape body {
+    overflow: hidden;
+  }
+
+  html.force-landscape #root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    transform-origin: top left;
+    transform: rotate(-90deg) translateX(-100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* dvh still refers to the unrotated viewport, so remap the shell and modals
+     to the rotated frame, whose usable height equals the viewport width. */
+  html.force-landscape .app-shell,
+  html.force-landscape .app-frame {
+    min-height: 100vw;
+  }
+
+  html.force-landscape [role='dialog'] {
+    max-height: 92vw;
+  }
+
+  /* Keep all four seats + center + hand inside a phone's landscape height. */
+  html.force-landscape .table-stage {
+    min-height: clamp(17rem, 74vw, 26rem);
+  }
+}
+
+/* Native landscape lock (Android): real rotation, so detect the short height
+   and shrink the board to fit. */
+@media (max-height: 480px) {
+  .table-stage {
+    min-height: clamp(16rem, 70vh, 24rem);
+  }
+}

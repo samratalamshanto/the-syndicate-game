@@ -178,7 +178,9 @@ export const GameScreen = () => {
   const bankRef = useRef<HTMLDivElement | null>(null);
   const coinRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const t = translations[language];
-  const isDesktop = useMediaQuery('(min-width: 640px)');
+  // Wide enough for the around-the-table board, either on a real desktop or on a
+  // phone that has been rotated to landscape (where the height exceeds the breakpoint).
+  const isDesktop = useMediaQuery('(min-width: 640px), (min-height: 600px)');
   const reactWindowMs = reactTimerSeconds > 0 ? reactTimerSeconds * 1000 : 0;
   const isHumanTurnSignal = Boolean(
     game &&
@@ -376,13 +378,21 @@ export const GameScreen = () => {
         : `+1 ${t.common.losses} — ${t.common.streak} ${Math.abs(profileMatchResult.streak)}`
     : null;
 
-  // Split opponents around table: top row + side seats.
-  // 1 opp: top center. 2: top split. 3: top center + 2 sides. 4-7: top row + side rows.
+  // Seat opponents around the table with the human at the bottom.
+  // 1 opp: top. 2: left + right. 3 (4 players): left, top, right — the N/S/E/W board.
+  // 4-7: top row + side rows.
   const topRow: typeof opponents = [];
   const leftRow: typeof opponents = [];
   const rightRow: typeof opponents = [];
-  if (opponentCount <= 3) {
-    topRow.push(...opponents);
+  if (opponentCount === 1) {
+    topRow.push(opponents[0]);
+  } else if (opponentCount === 2) {
+    leftRow.push(opponents[0]);
+    rightRow.push(opponents[1]);
+  } else if (opponentCount === 3) {
+    leftRow.push(opponents[0]);
+    topRow.push(opponents[1]);
+    rightRow.push(opponents[2]);
   } else {
     topRow.push(...opponents.slice(0, 3));
     const side = opponents.slice(3);
