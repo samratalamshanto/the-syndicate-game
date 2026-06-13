@@ -167,6 +167,7 @@ export const GameScreen = () => {
     setSpectatorMode,
     reactTimerSeconds,
     setReactTimerSeconds,
+    forcedLandscape,
   } = useGameStore();
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [overlay, setOverlay] = useState<OverlayKey>(null);
@@ -182,7 +183,14 @@ export const GameScreen = () => {
   const isShort = useMediaQuery('(max-height: 560px)');
   // Narrow phones stack vertically; wide-but-short (a phone held sideways) gets the
   // compact around-the-table board; anything taller keeps the desktop board.
-  const layoutMode: 'portrait' | 'landscape' | 'desktop' = !isWide ? 'portrait' : isShort ? 'landscape' : 'desktop';
+  // `forcedLandscape` (CSS-rotated iOS phones) always uses the landscape board.
+  const layoutMode: 'portrait' | 'landscape' | 'desktop' = forcedLandscape
+    ? 'landscape'
+    : !isWide
+      ? 'portrait'
+      : isShort
+        ? 'landscape'
+        : 'desktop';
   const isDesktop = layoutMode === 'desktop';
   const reactWindowMs = reactTimerSeconds > 0 ? reactTimerSeconds * 1000 : 0;
   const isHumanTurnSignal = Boolean(

@@ -5,6 +5,7 @@ import { translations } from '../i18n/translations';
 import { GameScreen } from './screens/GameScreen';
 import { SetupScreen } from './screens/SetupScreen';
 import { AchievementToast } from './widgets/AchievementToast';
+import { useForceLandscape } from './hooks/useForceLandscape';
 
 export const App = () => {
   const { game, language, theme, soundMuted, achievementToast, backToSetup, setLanguage, setTheme, setSoundMuted, clearAchievementToast } =
@@ -12,10 +13,18 @@ export const App = () => {
   const t = translations[language];
   const achievementCopy = achievementToast ? t.achievements[achievementToast.id] : null;
 
+  useForceLandscape();
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.lang = language;
   }, [language, theme]);
+
+  // Reset scroll when a match starts so the table isn't hidden below a scrolled setup page.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.querySelector('.app-frame')?.scrollTo?.(0, 0);
+  }, [game?.id]);
 
   return (
     <main className="app-shell relative min-h-[100dvh] text-app">

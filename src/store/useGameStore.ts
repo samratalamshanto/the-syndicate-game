@@ -117,6 +117,7 @@ type GameStore = {
   playerCount: number;
   botDifficulty: BotDifficulty;
   reactTimerSeconds: number;
+  forcedLandscape: boolean;
   startGame(): void;
   newGame(): void;
   backToSetup(): void;
@@ -145,6 +146,7 @@ type GameStore = {
   setPlayerCount(playerCount: number): void;
   setBotDifficulty(botDifficulty: BotDifficulty): void;
   setReactTimerSeconds(seconds: number): void;
+  setForcedLandscape(value: boolean): void;
 };
 
 const savedSettings = typeof localStorage === 'undefined' ? null : browserStorage.loadSettings();
@@ -209,6 +211,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   playerCount: 4,
   botDifficulty: 'medium',
   reactTimerSeconds: savedSettings?.reactTimerSeconds ?? 12,
+  forcedLandscape: false,
   startGame() {
     resetBotMemory();
     const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
@@ -473,6 +476,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { language, theme, soundMuted, series } = get();
     browserStorage.saveSettings({ language, theme, soundMuted, seriesLength: series.length, reactTimerSeconds });
     set({ reactTimerSeconds });
+  },
+  setForcedLandscape(forcedLandscape) {
+    set({ forcedLandscape });
   },
 }));
 

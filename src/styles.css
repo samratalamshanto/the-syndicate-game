@@ -373,13 +373,19 @@ select {
 }
 
 /* Reclaim vertical space from the app chrome on short landscape phones, and pin the
-   shell to the viewport so the flex board fills exactly one screen (no page scroll). */
+   shell to the viewport so the game board fills exactly one screen. The frame scrolls
+   internally so taller screens (the setup screen) stay reachable. */
 @media (min-width: 640px) and (max-height: 560px) {
-  .app-shell,
-  .app-frame {
+  .app-shell {
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
+  }
+
+  .app-frame {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .app-header {
@@ -389,6 +395,45 @@ select {
   .app-header .header-eyebrow {
     display: none;
   }
+}
+
+/* CSS-rotate fallback for phones without a native orientation lock (iOS Safari).
+   #root is rotated and sized to the rotated frame; its transform also becomes the
+   containing block for the fixed-position modals inside it, so they rotate too.
+   The landscape board uses rem/grid units (no vw/vh), so it survives the rotation. */
+html.force-landscape,
+html.force-landscape body {
+  overflow: hidden;
+}
+
+html.force-landscape #root {
+  position: fixed;
+  inset: 0;
+  width: 100vh;
+  height: 100vw;
+  transform-origin: top left;
+  transform: rotate(-90deg) translateX(-100%);
+  overflow: hidden;
+}
+
+html.force-landscape .app-shell {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html.force-landscape .app-frame {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+html.force-landscape .app-header {
+  padding-bottom: 0.35rem;
+}
+
+html.force-landscape .app-header .header-eyebrow {
+  display: none;
 }
 
 /* ---------- Gold ornamental border ---------- */
