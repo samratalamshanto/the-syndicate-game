@@ -285,6 +285,109 @@ select {
   background: var(--surface);
 }
 
+/* ---------- Compact around-the-table board for landscape phones ---------- */
+/* Wide-but-short viewports (a phone held sideways) can't fit the desktop board's
+   ~31rem height, so seats are placed with grid (no overlap) at N / W / E / S. */
+.landscape-board {
+  display: grid;
+  gap: 0.4rem 0.5rem;
+  grid-template-columns: minmax(8.5rem, 0.9fr) minmax(0, 2fr) minmax(8.5rem, 0.9fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'left top    right'
+    'left center right'
+    'left hand   right';
+  align-items: center;
+  min-height: 0;
+}
+
+.landscape-board .board-top {
+  grid-area: top;
+  justify-self: center;
+  width: 100%;
+  max-width: 15rem;
+}
+
+.landscape-board .board-left {
+  grid-area: left;
+  justify-self: start;
+}
+
+.landscape-board .board-right {
+  grid-area: right;
+  justify-self: end;
+}
+
+.landscape-board .board-left,
+.landscape-board .board-right {
+  width: 100%;
+}
+
+.landscape-board .board-center {
+  grid-area: center;
+  align-self: stretch;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.landscape-board .board-hand {
+  grid-area: hand;
+  justify-self: center;
+  width: 100%;
+  max-width: 34rem;
+}
+
+/* Trim the action pad on the short board: drop the verbose title, keep the choices. */
+.landscape-board .action-pad {
+  padding: 0.45rem 0.6rem;
+}
+
+.landscape-board .action-pad > div:first-child {
+  margin-bottom: 0.3rem;
+}
+
+.landscape-board .action-pad > div:first-child > div:first-child {
+  display: none;
+}
+
+.landscape-board .action-pad .grid {
+  gap: 0.35rem;
+}
+
+.landscape-board .action-pad .action-choice {
+  min-height: 2.6rem;
+  padding: 0.3rem 0.45rem;
+}
+
+/* Trim the hand panel chrome so the action pad has room on the short board. */
+.landscape-board .board-hand section {
+  gap: 0.25rem;
+  padding: 0.4rem 0.6rem;
+}
+
+/* Reclaim vertical space from the app chrome on short landscape phones, and pin the
+   shell to the viewport so the flex board fills exactly one screen (no page scroll). */
+@media (min-width: 640px) and (max-height: 560px) {
+  .app-shell,
+  .app-frame {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-header {
+    padding-bottom: 0.35rem;
+  }
+
+  .app-header .header-eyebrow {
+    display: none;
+  }
+}
+
 /* ---------- Gold ornamental border ---------- */
 .gold-frame {
   background-image:
@@ -576,50 +679,4 @@ select {
 
 .portrait-mask {
   mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
-}
-
-/* Forced landscape for phones without a native orientation lock (e.g. iOS Safari).
-   #root is rotated, so its transform also becomes the containing block for the
-   fixed-position modals/overlays inside it — they rotate along with the board. */
-@media (orientation: portrait) {
-  html.force-landscape,
-  html.force-landscape body {
-    overflow: hidden;
-  }
-
-  html.force-landscape #root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vh;
-    height: 100vw;
-    transform-origin: top left;
-    transform: rotate(-90deg) translateX(-100%);
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-
-  /* dvh still refers to the unrotated viewport, so remap the shell and modals
-     to the rotated frame, whose usable height equals the viewport width. */
-  html.force-landscape .app-shell,
-  html.force-landscape .app-frame {
-    min-height: 100vw;
-  }
-
-  html.force-landscape [role='dialog'] {
-    max-height: 92vw;
-  }
-
-  /* Keep all four seats + center + hand inside a phone's landscape height. */
-  html.force-landscape .table-stage {
-    min-height: clamp(17rem, 74vw, 26rem);
-  }
-}
-
-/* Native landscape lock (Android): real rotation, so detect the short height
-   and shrink the board to fit. */
-@media (max-height: 480px) {
-  .table-stage {
-    min-height: clamp(16rem, 70vh, 24rem);
-  }
 }

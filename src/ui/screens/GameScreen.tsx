@@ -178,9 +178,12 @@ export const GameScreen = () => {
   const bankRef = useRef<HTMLDivElement | null>(null);
   const coinRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const t = translations[language];
-  // Wide enough for the around-the-table board, either on a real desktop or on a
-  // phone that has been rotated to landscape (where the height exceeds the breakpoint).
-  const isDesktop = useMediaQuery('(min-width: 640px), (min-height: 600px)');
+  const isWide = useMediaQuery('(min-width: 640px)');
+  const isShort = useMediaQuery('(max-height: 560px)');
+  // Narrow phones stack vertically; wide-but-short (a phone held sideways) gets the
+  // compact around-the-table board; anything taller keeps the desktop board.
+  const layoutMode: 'portrait' | 'landscape' | 'desktop' = !isWide ? 'portrait' : isShort ? 'landscape' : 'desktop';
+  const isDesktop = layoutMode === 'desktop';
   const reactWindowMs = reactTimerSeconds > 0 ? reactTimerSeconds * 1000 : 0;
   const isHumanTurnSignal = Boolean(
     game &&
@@ -378,9 +381,8 @@ export const GameScreen = () => {
         : `+1 ${t.common.losses} — ${t.common.streak} ${Math.abs(profileMatchResult.streak)}`
     : null;
 
-  // Seat opponents around the table with the human at the bottom.
-  // 1 opp: top. 2: left + right. 3 (4 players): left, top, right — the N/S/E/W board.
-  // 4-7: top row + side rows.
+  // Split opponents around table: top row + side seats.
+  // 1 opp: top center. 2: top split. 3: top center + 2 sides. 4-7: top row + side rows.
   const topRow: typeof opponents = [];
   const leftRow: typeof opponents = [];
   const rightRow: typeof opponents = [];
@@ -390,6 +392,7 @@ export const GameScreen = () => {
     leftRow.push(opponents[0]);
     rightRow.push(opponents[1]);
   } else if (opponentCount === 3) {
+    // 4-player table: opponents seated left / top / right around the human (bottom).
     leftRow.push(opponents[0]);
     topRow.push(opponents[1]);
     rightRow.push(opponents[2]);
@@ -399,6 +402,21 @@ export const GameScreen = () => {
     const leftCount = Math.ceil(side.length / 2);
     leftRow.push(...side.slice(0, leftCount));
     rightRow.push(...side.slice(leftCount));
+  }
+
+  // Landscape-phone board: human at the bottom (S), opponents at top (N), left (W), right (E).
+  const lbLeft: typeof opponents = [];
+  const lbTop: typeof opponents = [];
+  const lbRight: typeof opponents = [];
+  if (opponentCount === 1) {
+    lbTop.push(opponents[0]);
+  } else if (opponentCount === 2) {
+    lbLeft.push(opponents[0]);
+    lbRight.push(opponents[1]);
+  } else {
+    lbLeft.push(opponents[0]);
+    lbRight.push(opponents[opponents.length - 1]);
+    lbTop.push(...opponents.slice(1, -1));
   }
 
   const currentBotThinking = botTurn.phase === 'thinking' && botTurn.actorId === current.id;
@@ -640,11 +658,37 @@ export const GameScreen = () => {
     </div>
   ) : null;
 
+  const renderBoardSeat = (p: (typeof opponents)[number]) => (
+    <PlayerSeat
+      key={p.id}
+      player={p}
+      isActive={p.id === game.currentPlayerId}
+      isTargetable={targetable}
+      isThinking={currentBotThinking && p.id === game.currentPlayerId}
+      isShaking={p.id === shakingTargetId}
+      flavorLine={flavorLineFor(p.id)}
+      density="compact"
+      variant="felt"
+      mini
+      coinRef={(node) => {
+        coinRefs.current[p.id] = node;
+      }}
+      onSelectTarget={chooseTarget}
+      compact
+    />
+  );
+
   return (
-    <section className="relative grid flex-1 gap-3 py-3 sm:gap-4 sm:py-4">
+    <section
+      className={
+        layoutMode === 'landscape'
+          ? 'relative flex min-h-0 flex-1 flex-col py-2'
+          : 'relative grid flex-1 gap-3 py-3 sm:gap-4 sm:py-4'
+      }
+    >
       {/* === TABLE === */}
       <div
-        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} px-3 py-4 sm:rounded-[2.25rem] sm:px-6 sm:py-8 ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
+        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} ${layoutMode === 'landscape' ? 'flex min-h-0 flex-1 flex-col px-3 py-2' : 'px-3 py-4 sm:px-6 sm:py-8'} sm:rounded-[2.25rem] ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
       >
         <div className="felt-atmosphere" aria-hidden="true" />
         {/* Floating helpers */}
@@ -700,7 +744,7 @@ export const GameScreen = () => {
         </label>
 
         {/* Phone opponent strip */}
-        {!isDesktop ? (
+        {layoutMode === 'portrait' ? (
           <div className="relative z-10 mt-11">
             <div className="scroll-tight -mx-3 flex snap-x snap-mandatory gap-2 overflow-x-auto px-3 pb-2">
               {opponents.map((p) => (
@@ -709,7 +753,6 @@ export const GameScreen = () => {
                   player={p}
                   isActive={p.id === game.currentPlayerId}
                   isTargetable={targetable}
-                  hasNoFunds={pendingAction === 'steal' && (game.players.find((player) => player.id === p.id)?.money ?? 0) === 0}
                   isThinking={currentBotThinking && p.id === game.currentPlayerId}
                   isShaking={p.id === shakingTargetId}
                   flavorLine={flavorLineFor(p.id)}
@@ -741,7 +784,6 @@ export const GameScreen = () => {
                 player={p}
                 isActive={p.id === game.currentPlayerId}
                 isTargetable={targetable}
-                hasNoFunds={pendingAction === 'steal' && (game.players.find((player) => player.id === p.id)?.money ?? 0) === 0}
                 isThinking={currentBotThinking && p.id === game.currentPlayerId}
                 isShaking={p.id === shakingTargetId}
                 flavorLine={flavorLineFor(p.id)}
@@ -764,7 +806,6 @@ export const GameScreen = () => {
                 player={p}
                 isActive={p.id === game.currentPlayerId}
                 isTargetable={targetable}
-                hasNoFunds={pendingAction === 'steal' && (game.players.find((player) => player.id === p.id)?.money ?? 0) === 0}
                 isThinking={currentBotThinking && p.id === game.currentPlayerId}
                 isShaking={p.id === shakingTargetId}
                 flavorLine={flavorLineFor(p.id)}
@@ -787,7 +828,6 @@ export const GameScreen = () => {
                 player={p}
                 isActive={p.id === game.currentPlayerId}
                 isTargetable={targetable}
-                hasNoFunds={pendingAction === 'steal' && (game.players.find((player) => player.id === p.id)?.money ?? 0) === 0}
                 isThinking={currentBotThinking && p.id === game.currentPlayerId}
                 isShaking={p.id === shakingTargetId}
                 flavorLine={flavorLineFor(p.id)}
@@ -833,7 +873,47 @@ export const GameScreen = () => {
         </div>
         ) : null}
 
-        {!isDesktop ? (
+        {/* Landscape-phone board: compact N/W/E/S seating that fits a short viewport */}
+        {layoutMode === 'landscape' ? (
+        <div className="landscape-board relative z-10 mt-1 min-h-0 flex-1">
+          <div className="board-top flex items-start justify-center gap-2">
+            {lbTop.map((p) => renderBoardSeat(p))}
+          </div>
+          <div className="board-left grid content-center gap-2">
+            {lbLeft.map((p) => renderBoardSeat(p))}
+          </div>
+          <div className="board-right grid content-center gap-2">
+            {lbRight.map((p) => renderBoardSeat(p))}
+          </div>
+          <div className="board-center">
+            {actionDecisionPad ?? reactionDecisionPad ?? counterChallengeDecisionPad ?? (
+              <TableCenter
+                prompt={tablePrompt}
+                subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
+                highlight={highlight}
+                announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
+                bankRef={bankRef}
+              />
+            )}
+          </div>
+          <div className="board-hand">
+            <HumanHand
+              player={humanView}
+              isActive={isHumanTurn}
+              flash={handFlash}
+              variant="felt"
+              dense
+              coinRef={(node) => {
+                coinRefs.current[humanView.id] = node;
+              }}
+              onNewGame={newGame}
+              onBackToSetup={backToSetup}
+            />
+          </div>
+        </div>
+        ) : null}
+
+        {layoutMode === 'portrait' ? (
         <div className="relative z-10 mt-2">
           {actionDecisionPad ?? reactionDecisionPad ?? counterChallengeDecisionPad ?? (
             <TableCenter
@@ -841,14 +921,14 @@ export const GameScreen = () => {
               subPrompt={botTurn.phase === 'announcing' ? t.common.showingCard : subPrompt}
               highlight={highlight}
               announcement={botTurn.phase === 'announcing' ? botAnnouncement : null}
-              bankRef={!isDesktop ? bankRef : undefined}
+              bankRef={bankRef}
             />
           )}
         </div>
         ) : null}
 
         {/* Human seat */}
-        {!isDesktop ? (
+        {layoutMode === 'portrait' ? (
         <div className="relative z-10 mt-3">
           <HumanHand
             player={humanView}
@@ -949,7 +1029,7 @@ export const GameScreen = () => {
       </div>
 
       {/* === ACTION HAND === */}
-      {!counterChallengeChoice && !reactPromptActive && !isHumanTurn && !isComplete ? (
+      {layoutMode !== 'landscape' && !counterChallengeChoice && !reactPromptActive && !isHumanTurn && !isComplete ? (
         <div className="surface-strong rounded-xl border px-4 py-2 text-center font-display text-sm font-black">
           {current.name} {t.common.thinking}...
           <span className="sr-only">Bot 1 thinking</span>

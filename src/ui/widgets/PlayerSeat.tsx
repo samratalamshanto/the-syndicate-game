@@ -20,6 +20,8 @@ type Props = {
   coinRef?: Ref<HTMLDivElement>;
   onSelectTarget?: (playerId: string) => void;
   compact?: boolean;
+  /** Ultra-compact badge (avatar + name + money + card pips) for the landscape board. */
+  mini?: boolean;
 };
 
 export const PlayerSeat = ({
@@ -36,6 +38,7 @@ export const PlayerSeat = ({
   coinRef,
   onSelectTarget,
   compact = true,
+  mini = false,
 }: Props) => {
   const language = useGameStore((state) => state.language);
   const t = translations[language];
@@ -48,7 +51,7 @@ export const PlayerSeat = ({
   const initials = persona ? persona.name.slice(0, 2).toUpperCase() : '';
   const seedHash = persona ? djb2(persona.avatarSeed) : 0;
   const hue = (seedHash * 137) % 360;
-  const panelPadding = isPhone || density === 'compact' || isFelt ? 'px-2 py-1.5' : 'px-3 py-2.5';
+  const panelPadding = mini ? 'px-2 py-1' : isPhone || density === 'compact' || isFelt ? 'px-2 py-1.5' : 'px-3 py-2.5';
 
   const cards = player.cards
     ? player.cards.filter((c) => c.status === 'alive').map((card) => (
@@ -124,10 +127,19 @@ export const PlayerSeat = ({
         </div>
       </div>
 
-      <div className={`flex flex-wrap gap-1.5 ${isFelt ? 'justify-center' : ''}`}>
+      <div className={`flex flex-wrap gap-1.5 ${isFelt || mini ? 'justify-center' : ''}`}>
         {player.isEliminated ? (
-          <div className="flex items-center gap-1 rounded-md bg-ember/15 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-ember">
+          <div className="flex items-center gap-1 rounded-md bg-ember/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-ember">
             <Skull size={12} /> out
+          </div>
+        ) : mini ? (
+          <div className="flex items-center gap-1">
+            {Array.from({ length: player.aliveCards }).map((_, index) => (
+              <span key={`pip-${index}`} className="h-3.5 w-2.5 rounded-[3px] border border-brass/50 bg-[var(--surface-muted)]" />
+            ))}
+            {player.revealedRoles.map((_, index) => (
+              <span key={`pip-dead-${index}`} className="h-3.5 w-2.5 rounded-[3px] bg-alert/70" />
+            ))}
           </div>
         ) : (
           <>

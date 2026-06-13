@@ -13,12 +13,14 @@ type Props = {
   isActive: boolean;
   flash?: boolean;
   variant?: 'panel' | 'felt';
+  /** Slim layout (smaller cards) for the short landscape board. */
+  dense?: boolean;
   coinRef?: Ref<HTMLDivElement>;
   onNewGame: () => void;
   onBackToSetup: () => void;
 };
 
-export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', coinRef, onNewGame, onBackToSetup }: Props) => {
+export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', dense = false, coinRef, onNewGame, onBackToSetup }: Props) => {
   const language = useGameStore((state) => state.language);
   const t = translations[language];
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -26,7 +28,7 @@ export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', 
 
   const cards = player.cards ?? [];
   const isFelt = variant === 'felt';
-  const cardSize = isFelt ? 'md' : 'lg';
+  const cardSize = dense ? 'xs' : isFelt ? 'md' : 'lg';
   const surfaceClass = isFelt ? 'felt-human-hand' : 'surface-glass';
   const seenCardIdsRef = useRef<Set<string>>(new Set());
   const freshCardIds = useMemo(
@@ -41,6 +43,96 @@ export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', 
       }
     });
   }, [cards]);
+
+  const confirmModal = (
+    <Modal
+      open={confirmOpen}
+      onClose={() => setConfirmOpen(false)}
+      title={t.common.startNewGame}
+      icon={<RefreshCcw size={18} />}
+      size="sm"
+      actions={
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmOpen(false);
+              onNewGame();
+            }}
+            className="min-h-11 rounded-full bg-accent px-3 py-2 text-xs font-black"
+          >
+            {t.common.sameSettings}
+          </button>
+          <button
+            type="button"
+            onClick={onBackToSetup}
+            className="surface-control min-h-11 rounded-full border px-3 py-2 text-xs font-black"
+          >
+            {t.common.changeSettings}
+          </button>
+        </div>
+      }
+    >
+      <p className="text-app-muted text-sm">
+        {t.common.sameSettings} / {t.common.changeSettings}
+      </p>
+    </Modal>
+  );
+
+  // Compact single-row bar for the short landscape board: avatar · money · cards · new game.
+  if (dense) {
+    return (
+      <section
+        aria-label={t.common.yourHand}
+        className={`felt-human-hand relative flex items-center gap-2 rounded-2xl border px-2 py-1.5 ${
+          isActive ? 'border-brass' : 'border-token'
+        } ${flash ? 'human-turn-flash' : ''} ${player.aliveCards === 1 ? 'animate-pulseRed' : ''}`}
+      >
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brass text-night shadow">
+          <User size={14} />
+        </span>
+        <div
+          ref={coinRef}
+          className="surface-control flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5"
+        >
+          <span className="relative grid h-5 w-5 place-items-center rounded-full border border-token-soft bg-[var(--surface-muted)]">
+            <CircleDollarSign size={12} className="text-brass" />
+          </span>
+          <span className="font-mono text-xs font-black tabular-nums text-app">
+            {player.money}
+            <span className="text-app-muted">/10</span>
+          </span>
+        </div>
+        <div className="flex min-w-0 flex-1 items-end gap-1.5 overflow-x-auto scroll-tight">
+          {cards.length === 0 ? (
+            <p className="text-app-muted text-sm">—</p>
+          ) : (
+            cards.map((card) =>
+              card.status === 'alive' ? (
+                <GameCard key={card.id} variant="face" role={card.role} size={cardSize} fresh={freshCardIds.has(card.id)} yours />
+              ) : (
+                <GameCard key={card.id} variant="dead" role={card.role} size={cardSize} />
+              ),
+            )
+          )}
+        </div>
+        {player.aliveCards === 1 ? (
+          <span className="shrink-0 rounded-full border border-ember bg-ember/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-ember">
+            {t.common.lastCard}
+          </span>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setConfirmOpen(true)}
+          aria-label={t.common.newGame}
+          className="surface-control inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border px-2 py-1 text-xs font-bold"
+        >
+          <RefreshCcw size={13} />
+        </button>
+        {confirmModal}
+      </section>
+    );
+  }
 
   return (
     <section
@@ -87,38 +179,7 @@ export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', 
         </div>
       </div>
 
-      <Modal
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        title={t.common.startNewGame}
-        icon={<RefreshCcw size={18} />}
-        size="sm"
-        actions={
-          <div className="grid gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => {
-                setConfirmOpen(false);
-                onNewGame();
-              }}
-              className="min-h-11 rounded-full bg-accent px-3 py-2 text-xs font-black"
-            >
-              {t.common.sameSettings}
-            </button>
-            <button
-              type="button"
-              onClick={onBackToSetup}
-              className="surface-control min-h-11 rounded-full border px-3 py-2 text-xs font-black"
-            >
-              {t.common.changeSettings}
-            </button>
-          </div>
-        }
-      >
-        <p className="text-app-muted text-sm">
-          {t.common.sameSettings} / {t.common.changeSettings}
-        </p>
-      </Modal>
+      {confirmModal}
 
       <div className={`flex flex-nowrap items-end gap-2 overflow-x-auto scroll-tight pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0 ${isFelt ? 'sm:justify-center sm:gap-2' : 'sm:gap-3'}`}>
         {cards.length === 0 ? (
