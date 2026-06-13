@@ -362,8 +362,16 @@ select {
 }
 
 .landscape-board .action-pad .action-choice {
-  min-height: 2.75rem;
-  padding: 0.3rem 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.45rem;
+}
+
+/* Tighten the around-the-table seats so the action pad keeps its room on tiny screens. */
+.landscape-board .board-top .felt-seat,
+.landscape-board .board-left .felt-seat,
+.landscape-board .board-right .felt-seat {
+  gap: 0.25rem;
+  padding: 0.2rem 0.45rem;
 }
 
 /* Show full action names/notes on the short board instead of truncating them. */
@@ -403,14 +411,19 @@ select {
   .app-frame {
     height: 100%;
     min-height: 0;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
     overflow-y: auto;
   }
 
+  /* Keep the header on a single compact row so it does not steal board height. */
   .app-header {
+    flex-wrap: nowrap;
     padding-bottom: 0.35rem;
   }
 
-  .app-header .header-eyebrow {
+  .app-header .header-eyebrow,
+  .app-header .header-brand-text {
     display: none;
   }
 }
@@ -425,8 +438,20 @@ select {
   }
 
   .setup-screen h2 {
-    font-size: 2.25rem;
+    font-size: 1.85rem;
     line-height: 1.1;
+  }
+
+  .setup-controls {
+    gap: 0.75rem;
+    padding: 0.9rem;
+  }
+
+  /* Drop tall, non-essential setup chrome so Start sits in the first viewport. */
+  .setup-card-spread,
+  .setup-tagline,
+  .setup-stats {
+    display: none;
   }
 }
 
@@ -458,6 +483,8 @@ html.force-landscape .app-shell {
 html.force-landscape .app-frame {
   height: 100%;
   min-height: 0;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
   overflow-y: auto;
 }
 

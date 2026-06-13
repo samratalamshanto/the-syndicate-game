@@ -37,7 +37,7 @@ export const App = () => {
             <span className="surface-strong grid h-9 w-9 place-items-center rounded-full border font-display text-lg font-black gold-text">
               S
             </span>
-            <div className="leading-tight">
+            <div className="header-brand-text leading-tight">
               <p className="header-eyebrow text-[10px] font-black uppercase tracking-[0.32em] text-brass">power · deception · elimination</p>
               <h1 className="font-display text-2xl font-black tracking-wide sm:text-3xl gold-text">{t.gameTitle}</h1>
             </div>

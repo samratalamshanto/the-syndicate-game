@@ -43,11 +43,11 @@ export const SetupScreen = () => {
       <div className="grid gap-6">
         <div className="grid gap-4">
           <h2 className="font-display text-5xl font-black leading-[1.05] tracking-wide text-app sm:text-6xl">{t.gameTitle}</h2>
-          <p className="text-app-muted mt-3 max-w-xl text-base lg:whitespace-nowrap">{t.subtitle}</p>
+          <p className="setup-tagline text-app-muted mt-3 max-w-xl text-base lg:whitespace-nowrap">{t.subtitle}</p>
           <button
             type="button"
             onClick={() => setGuideOpen(true)}
-            className="group inline-flex w-fit items-center gap-2 text-sm font-black text-brass hover:text-accent"
+            className="setup-tagline group inline-flex w-fit items-center gap-2 text-sm font-black text-brass hover:text-accent"
           >
             <BookOpen size={17} />
             <span>{t.common.guide}</span>
@@ -55,7 +55,7 @@ export const SetupScreen = () => {
           </button>
         </div>
 
-        <div className="grid gap-2">
+        <div className="setup-stats grid gap-2">
           <div className="flex flex-wrap gap-4 text-sm font-black">
             <button type="button" onClick={() => setProfileOpen((open) => !open)} className="inline-flex items-center gap-2 text-app-muted hover:text-brass">
               <Trophy size={15} className="text-brass" />
@@ -171,7 +171,7 @@ export const SetupScreen = () => {
         </div>
 
         {/* Fanned character spread */}
-        <div className="relative h-44 overflow-visible sm:h-52">
+        <div className="setup-card-spread relative h-44 overflow-visible sm:h-52">
           <div className="absolute inset-x-0 top-0 flex items-end justify-center">
             {roleOrder.map((role, idx) => {
               const center = (roleOrder.length - 1) / 2;
@@ -195,7 +195,7 @@ export const SetupScreen = () => {
         </div>
 
         {/* Setup controls */}
-        <div className="surface-glass grid gap-4 rounded-2xl border p-5 backdrop-blur">
+        <div className="setup-controls surface-glass grid gap-4 rounded-2xl border p-5 backdrop-blur">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.setup.title}</p>
           </div>

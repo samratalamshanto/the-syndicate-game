@@ -695,13 +695,13 @@ export const GameScreen = () => {
     <section
       className={
         layoutMode === 'landscape'
-          ? 'relative flex min-h-0 flex-1 flex-col py-2'
+          ? 'relative flex min-h-0 flex-1 flex-col py-1'
           : 'relative grid flex-1 gap-3 py-3 sm:gap-4 sm:py-4'
       }
     >
       {/* === TABLE === */}
       <div
-        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} ${layoutMode === 'landscape' ? 'flex min-h-0 flex-1 flex-col px-3 py-2' : 'px-3 py-4 sm:px-6 sm:py-8'} sm:rounded-[2.25rem] ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
+        className={`relative overflow-hidden rounded-[1.5rem] ${tableTheme} ${layoutMode === 'landscape' ? 'flex min-h-0 flex-1 flex-col px-3 py-1.5' : 'px-3 py-4 sm:px-6 sm:py-8'} sm:rounded-[2.25rem] ${humanView.aliveCards === 1 ? 'last-card-table' : ''}`}
       >
         <div className="felt-atmosphere" aria-hidden="true" />
         {/* Floating helpers */}
@@ -888,7 +888,7 @@ export const GameScreen = () => {
 
         {/* Landscape-phone board: compact N/W/E/S seating that fits a short viewport */}
         {layoutMode === 'landscape' ? (
-        <div className="landscape-board relative z-10 mt-1 min-h-0 flex-1">
+        <div className="landscape-board relative z-10 min-h-0 flex-1">
           <div className="board-top flex items-start justify-center gap-2">
             {lbTop.map((p) => renderBoardSeat(p))}
           </div>
