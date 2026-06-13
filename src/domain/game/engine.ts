@@ -21,6 +21,11 @@ const actionRoles: Partial<Record<GameAction['type'], RoleId>> = {
   exchange: 'helper',
 };
 
+const primaryActionCost: Partial<Record<GameAction['type'], number>> = {
+  attack: 3,
+  eliminate: 7,
+};
+
 export const requiredRoleForAction = (actionType: GameAction['type']) => actionRoles[actionType] ?? null;
 
 export const createGame = (config: GameConfig, random: RandomSource = config.seed ? seededRandom(config.seed) : Math.random): GameState => {
@@ -117,6 +122,18 @@ export const resolveAction = (state: GameState, action: GameAction, random: Rand
 
   if (isEliminated(actor) || next.phase === 'complete') {
     return next;
+  }
+
+  // Primary actions (not challenge/block reactions) must come from the player on turn
+  // and the actor must be able to pay the cost; reject invalid callers as a no-op.
+  if (action.type !== 'challenge' && action.type !== 'block') {
+    if (action.actorId !== next.currentPlayerId) {
+      return next;
+    }
+    const cost = primaryActionCost[action.type] ?? 0;
+    if (actor.money < cost) {
+      return next;
+    }
   }
 
   if (action.type === 'challenge') {

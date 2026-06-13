@@ -140,6 +140,34 @@ describe('game engine', () => {
     expect(next.winnerId).toBeNull();
   });
 
+  it('ignores a primary action from a player who is not on turn', () => {
+    const state = riggedState(); // current player is player-1
+    const next = resolveAction(state, { type: 'tax', actorId: 'player-2' });
+
+    expect(next.players[1].money).toBe(0); // no free +3 for an off-turn actor
+    expect(next.currentPlayerId).toBe('player-1');
+  });
+
+  it('rejects an attack the actor cannot afford instead of performing it for free', () => {
+    const state = riggedState();
+    state.players[0].money = 2; // below the attack cost of 3
+    const next = resolveAction(state, { type: 'attack', actorId: 'player-1', targetId: 'player-2' });
+
+    expect(next.players[0].money).toBe(2); // not spent or clamped to zero
+    expect(next.pendingChoice).toBeNull(); // target was never forced to reveal
+    expect(next.players[1].cards.filter((card) => card.status === 'alive')).toHaveLength(2);
+  });
+
+  it('rejects an eliminate the actor cannot afford', () => {
+    const state = riggedState();
+    state.players[0].money = 6; // below the eliminate cost of 7
+    const next = resolveAction(state, { type: 'eliminate', actorId: 'player-1', targetId: 'player-2' });
+
+    expect(next.players[0].money).toBe(6);
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[1].cards.filter((card) => card.status === 'alive')).toHaveLength(2);
+  });
+
   it('punishes a bluffing actor when challenged', () => {
     const state = riggedState();
     state.players[0].cards = [
@@ -415,7 +443,10 @@ describe('game engine', () => {
   });
 
   it('returns a selected human attack-loss card to the deck without revealing it', () => {
-    const pending = resolveAction(riggedState(), {
+    const state = riggedState();
+    state.currentPlayerId = 'player-2'; // attacker must be on turn
+    state.players[1].money = 3; // and able to pay the attack cost
+    const pending = resolveAction(state, {
       type: 'attack',
       actorId: 'player-2',
       targetId: 'player-1',
@@ -469,6 +500,8 @@ describe('game engine', () => {
 
   it('auto-returns attack loss cards for a human with one live card and for bots', () => {
     const oneCardHuman = riggedState();
+    oneCardHuman.currentPlayerId = 'player-2'; // attacker must be on turn
+    oneCardHuman.players[1].money = 3; // and able to pay the attack cost
     oneCardHuman.players[0].cards[0].status = 'revealed';
     const afterHumanAttack = resolveAction(oneCardHuman, {
       type: 'attack',
