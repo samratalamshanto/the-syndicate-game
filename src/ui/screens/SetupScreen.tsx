@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
 import { GuidePanel } from '../widgets/GuidePanel';
+import { Tutorial } from '../widgets/Tutorial';
 import { GameCard } from '../widgets/GameCard';
 import { Modal } from '../widgets/Modal';
 import { roleOrder } from '../../config/branding';
@@ -28,13 +29,14 @@ export const SetupScreen = () => {
   const t = translations[language];
   const difficulties = difficultyOrder.map((value) => ({ value, ...t.setup.difficulties[value] }));
   const [guideOpen, setGuideOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
-  // First-run teaching: open the how-to-play once so new players see the objective,
-  // the roles, and how challenges work before they start.
+  // First-run teaching: run the interactive tutorial once so new players learn the
+  // objective, the roles, and how challenges work before they start.
   useEffect(() => {
     if (typeof localStorage === 'undefined') return;
     if (!localStorage.getItem('syndicate.introSeen')) {
-      setGuideOpen(true);
+      setTutorialOpen(true);
       localStorage.setItem('syndicate.introSeen', '1');
     }
   }, []);
@@ -272,6 +274,7 @@ export const SetupScreen = () => {
         </div>
 
       </div>
+      {tutorialOpen ? <Tutorial onClose={() => setTutorialOpen(false)} /> : null}
       <Modal
         open={guideOpen}
         onClose={() => setGuideOpen(false)}
