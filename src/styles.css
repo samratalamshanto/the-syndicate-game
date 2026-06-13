@@ -193,6 +193,18 @@ select {
   color: var(--success);
 }
 
+.text-warn {
+  color: var(--warn);
+}
+
+.bg-warn-soft {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+}
+
+.border-warn-soft {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+}
+
 .bg-accent-soft {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
 }

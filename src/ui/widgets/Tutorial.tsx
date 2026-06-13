@@ -58,7 +58,7 @@ export const Tutorial = ({ onClose }: Props) => {
               <span className="inline-flex items-center gap-1 rounded-full border border-success/50 bg-success/10 px-2.5 py-1 text-success">
                 <ShieldCheck size={14} /> {demoRole}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-amber-500/10 px-2.5 py-1 text-amber-700 dark:text-amber-400">
+              <span className="bg-warn-soft border-warn-soft text-warn inline-flex items-center gap-1 rounded-full border px-2.5 py-1">
                 <ShieldAlert size={14} /> {t.common.bluffTag}
               </span>
             </div>
