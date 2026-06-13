@@ -671,6 +671,7 @@ export const GameScreen = () => {
       timeoutMs={reactWindowMs}
       humanRoles={humanRoles}
       onReact={reactToBot}
+      compact={layoutMode === 'landscape'}
     />
   ) : null;
   const counterChallengeDecisionPad = counterChallengeChoice ? (
@@ -1127,6 +1128,7 @@ export const GameScreen = () => {
           onWatch={() => setSpectatorMode('watching')}
           onSameSettings={newGame}
           onChangeSettings={backToSetup}
+          compact={layoutMode === 'landscape'}
         />
       ) : null}
 
