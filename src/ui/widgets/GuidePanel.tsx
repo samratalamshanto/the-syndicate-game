@@ -21,7 +21,10 @@ export const GuidePanel = ({ compact = false }: Props) => {
         <BadgeHelp size={18} />
         <h2 className="font-display text-xl font-black">{t.guide.title}</h2>
       </div>
-      <p className="text-app-muted mt-2 text-sm">{t.guide.intro}</p>
+      <p className="mt-2 flex items-start gap-2 text-sm font-bold text-app">
+        <Trophy size={16} className="mt-0.5 shrink-0 text-success" />
+        <span>{t.guide.intro}</span>
+      </p>
 
       {compact ? (
         <div className="mt-4 grid gap-3">

@@ -105,9 +105,10 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /how to play/i }));
 
     expect(screen.getAllByRole('heading', { name: /how to play/i }).length).toBeGreaterThan(0);
-    expect(screen.getByText('Action')).toBeInTheDocument();
-    expect(screen.getByText('Challenge')).toBeInTheDocument();
-    expect(screen.getByText('Resolve')).toBeInTheDocument();
+    // These labels now also appear in the in-game phase indicator, so allow multiple.
+    expect(screen.getAllByText('Action').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Challenge').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Resolve').length).toBeGreaterThan(0);
     expect(screen.getByText(/wrongly challenge/i)).toBeInTheDocument();
     expect(screen.getAllByText('Take 3 money.').length).toBeGreaterThan(0);
   });
