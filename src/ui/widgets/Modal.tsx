@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 type ModalProps = {
@@ -23,6 +23,16 @@ const sizeClass: Record<NonNullable<ModalProps['size']>, string> = {
 export const Modal = ({ open, onClose, title, subtitle, icon, size = 'md', actions, dismissible = true, children }: ModalProps) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   useFocusTrap(panelRef, open, dismissible ? onClose : () => {});
+
+  // Lock background scroll while a modal is open so the page can't scroll behind it.
+  useEffect(() => {
+    if (!open) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   if (!open) return null;
 
