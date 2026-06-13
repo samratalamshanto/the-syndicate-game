@@ -50,8 +50,8 @@ export const SetupScreen = () => {
   return (
     <section className="setup-screen relative mx-auto grid w-full max-w-3xl flex-1 gap-6 py-6">
       {/* HERO LEFT */}
-      <div className="grid gap-6">
-        <div className="grid gap-4">
+      <div className="grid gap-4 sm:gap-6">
+        <div className="grid gap-3 sm:gap-4">
           <h2 className="font-display text-5xl font-black leading-[1.05] tracking-wide text-app sm:text-6xl">{t.gameTitle}</h2>
           <p className="setup-tagline text-app-muted mt-3 max-w-xl text-base lg:whitespace-nowrap">{t.subtitle}</p>
           <button
@@ -240,7 +240,7 @@ export const SetupScreen = () => {
 
           <div className="grid gap-2">
             <p className="text-sm font-bold">{t.setup.difficulty}</p>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2">
               {difficulties.map((d) => (
                 <button
                   key={d.value}

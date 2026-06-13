@@ -32,7 +32,7 @@ export const App = () => {
       <div className="app-backdrop absolute inset-0 -z-10" />
 
       <div className="app-frame relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-3 pb-4 pt-3 sm:px-6">
-        <header className="app-header flex flex-wrap items-center justify-between gap-2 border-b border-token-soft pb-3 sm:gap-3">
+        <header className={`app-header flex flex-wrap items-center justify-between gap-2 border-b border-token-soft pb-3 sm:gap-3${game ? ' in-game' : ''}`}>
           <div className="flex items-center gap-3">
             <span className="surface-strong grid h-9 w-9 place-items-center rounded-full border font-display text-lg font-black gold-text">
               S

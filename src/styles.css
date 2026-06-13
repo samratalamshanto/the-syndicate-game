@@ -480,13 +480,33 @@ select {
     padding-bottom: 1rem;
   }
 
+  /* The persistent app header already shows the title; drop the duplicate hero
+     title and the tall decorative fan so Start surfaces in the first viewport. */
   .setup-screen h2 {
-    font-size: 2rem;
-    line-height: 1.1;
+    display: none;
   }
 
   .setup-card-spread {
     display: none;
+  }
+
+  /* Compress the setup controls ~25% so the primary CTA sits above the fold. */
+  .setup-controls {
+    gap: 0.85rem;
+    padding: 0.9rem;
+  }
+
+  /* Shrink the in-game HUD chrome on portrait phones so the table gets the height. */
+  .app-header.in-game {
+    padding-bottom: 0.4rem;
+  }
+
+  .app-header.in-game .header-eyebrow {
+    display: none;
+  }
+
+  .app-header.in-game .header-brand-text h1 {
+    font-size: 1.25rem;
   }
 }
 
