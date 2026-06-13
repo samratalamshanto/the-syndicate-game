@@ -13,6 +13,8 @@ export type ActionType = 'income' | 'fundRaise' | 'tax' | 'steal' | 'exchange' |
 export type GameConfig = {
   playerCount: number;
   humanPlayerId: string;
+  /** Number of seats controlled by humans sharing one device (pass & play). Defaults to 1. */
+  humanCount?: number;
   startingMoney: number;
   maxMoney: number;
   cardsPerPlayer: number;

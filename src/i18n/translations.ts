@@ -20,6 +20,8 @@ type Translation = {
   setup: {
     title: string;
     players: string;
+    humans: string;
+    humansTag: string;
     difficulty: string;
     difficulties: Record<'easy' | 'medium' | 'hard', { label: string; tag: string }>;
     start: string;
@@ -183,6 +185,11 @@ type Translation = {
     yourMove: string;
     next: string;
     youLabel: string;
+    playerLabel: string;
+    humanLabel: string;
+    passTitle: string;
+    passBody: string;
+    passButton: string;
     secondsShort: string;
     lastEvent: {
       claim: string;
@@ -247,6 +254,8 @@ const dailyEn: Translation = {
   setup: {
     title: 'Create Game',
     players: 'Players',
+    humans: 'Humans (pass & play)',
+    humansTag: 'Share one device · the rest are bots',
     difficulty: 'Bot level',
     difficulties: {
       easy: { label: 'Easy', tag: 'Forgiving · learn the ropes' },
@@ -414,6 +423,11 @@ const dailyEn: Translation = {
     yourMove: 'YOUR MOVE',
     next: 'Next',
     youLabel: 'You',
+    playerLabel: 'Player',
+    humanLabel: 'Human',
+    passTitle: 'Pass the device',
+    passBody: 'Hand the phone to {name}. Keep the screen hidden until they tap below.',
+    passButton: "I'm {name} — show my cards",
     secondsShort: '{n}s',
     lastEvent: {
       claim: '{actor} claimed {role} → wants {amount} coins',
@@ -569,6 +583,8 @@ const dailyBn: Translation = {
   setup: {
     title: 'গেম তৈরি করুন',
     players: 'প্লেয়ার',
+    humans: 'মানুষ (পাস ও প্লে)',
+    humansTag: 'একটি ডিভাইস ভাগ করুন · বাকিরা বট',
     difficulty: 'বট লেভেল',
     difficulties: {
       easy: { label: 'সহজ', tag: 'ক্ষমাশীল · শিখে নিন' },
@@ -741,6 +757,11 @@ const dailyBn: Translation = {
     yourMove: 'আপনার চাল',
     next: 'পরবর্তী',
     youLabel: 'আপনি',
+    playerLabel: 'প্লেয়ার',
+    humanLabel: 'মানুষ',
+    passTitle: 'ডিভাইস হস্তান্তর করুন',
+    passBody: '{name}-এর হাতে ফোনটি দিন। তারা নিচে ট্যাপ না করা পর্যন্ত স্ক্রিন লুকিয়ে রাখুন।',
+    passButton: 'আমি {name} — আমার কার্ড দেখান',
     secondsShort: '{n}সে',
     lastEvent: {
       // TODO: native bn review before merge.

@@ -1,4 +1,4 @@
-import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users } from 'lucide-react';
+import { ArrowRight, Award, Bot, BookOpen, Lock, Minus, Play, Plus, RotateCcw, Trophy, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
@@ -18,10 +18,12 @@ export const SetupScreen = () => {
   const {
     language,
     playerCount,
+    humanCount,
     botDifficulty,
     profile,
     achievements,
     setPlayerCount,
+    setHumanCount,
     setBotDifficulty,
     startGame,
     resetProfile,
@@ -225,17 +227,52 @@ export const SetupScreen = () => {
               onChange={(e) => setPlayerCount(Number(e.target.value))}
               className="w-full accent-brass"
             />
-            <div className="text-app-muted flex items-center gap-1.5">
-              <span className="text-xs">{t.setup.players}:</span>
-              {Array.from({ length: playerCount - 1 }).map((_, idx) => (
-                <span key={idx} className="surface-control grid h-6 w-6 place-items-center rounded-full border text-brass">
+            <div className="setup-pips text-app-muted flex flex-wrap items-center gap-1.5">
+              {Array.from({ length: humanCount }).map((_, idx) => (
+                <span key={`human-${idx}`} className="grid h-6 w-6 place-items-center rounded-full bg-brass text-night">
+                  <Users size={11} />
+                </span>
+              ))}
+              {Array.from({ length: playerCount - humanCount }).map((_, idx) => (
+                <span key={`bot-${idx}`} className="surface-control grid h-6 w-6 place-items-center rounded-full border text-brass">
                   <Bot size={11} />
                 </span>
               ))}
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-brass text-night">
-                <Users size={11} />
-              </span>
             </div>
+          </div>
+
+          {/* Pass & play: how many of the seats are humans sharing this device. */}
+          <div className="grid gap-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-2 text-sm font-bold">
+                <Users size={15} className="text-brass" />
+                {t.setup.humans}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setHumanCount(humanCount - 1)}
+                  disabled={humanCount <= 1}
+                  aria-label="−"
+                  className="surface-control grid h-9 w-9 place-items-center rounded-full border disabled:opacity-40"
+                >
+                  <Minus size={15} />
+                </button>
+                <span className="min-w-7 rounded-full bg-brass/15 px-2 py-0.5 text-center font-display text-base font-black text-brass">
+                  {humanCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setHumanCount(humanCount + 1)}
+                  disabled={humanCount >= playerCount - 1}
+                  aria-label="+"
+                  className="surface-control grid h-9 w-9 place-items-center rounded-full border disabled:opacity-40"
+                >
+                  <Plus size={15} />
+                </button>
+              </div>
+            </div>
+            <p className="text-app-muted text-[11px]">{t.setup.humansTag}</p>
           </div>
 
           <div className="grid gap-2">
