@@ -1,4 +1,4 @@
-import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users, X } from 'lucide-react';
+import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
@@ -81,15 +81,19 @@ export const SetupScreen = () => {
             </button>
           </div>
 
-          {profileOpen ? (
-            <div className="surface-glass grid max-w-xl gap-3 rounded-2xl border p-4 text-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-display text-base font-black text-app">{t.common.lifetime}</p>
-                  <p className="text-app-muted text-xs">
-                    {t.common.matchesPlayed}: {profile.matchesPlayed}
-                  </p>
-                </div>
+          <Modal
+            open={profileOpen}
+            onClose={() => {
+              setProfileOpen(false);
+              setConfirmResetOpen(false);
+            }}
+            title={t.common.lifetime}
+            subtitle={`${t.common.matchesPlayed}: ${profile.matchesPlayed}`}
+            icon={<Trophy size={18} />}
+            size="md"
+          >
+            <div className="grid gap-3 text-sm">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setConfirmResetOpen(true)}
@@ -138,22 +142,16 @@ export const SetupScreen = () => {
                 </div>
               ) : null}
             </div>
-          ) : null}
+          </Modal>
 
-          {achievementsOpen ? (
-            <div className="surface-glass grid max-w-xl gap-3 rounded-2xl border p-4">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-display text-base font-black text-app">{t.common.achievements}</p>
-                <button
-                  type="button"
-                  onClick={() => setAchievementsOpen(false)}
-                  className="surface-control grid h-9 w-9 place-items-center rounded-full border"
-                  aria-label={t.common.cancel}
-                >
-                  <X size={15} />
-                </button>
-              </div>
-              <div className="grid max-h-[22rem] grid-cols-2 gap-2 overflow-auto pr-1 scroll-tight sm:grid-cols-3">
+          <Modal
+            open={achievementsOpen}
+            onClose={() => setAchievementsOpen(false)}
+            title={t.common.achievements}
+            icon={<Award size={18} />}
+            size="lg"
+          >
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {achievementIds.map((id) => {
                   const copy = t.achievements[id];
                   const unlocked = achievements.unlocked[id] !== undefined;
@@ -174,9 +172,8 @@ export const SetupScreen = () => {
                     </button>
                   );
                 })}
-              </div>
             </div>
-          ) : null}
+          </Modal>
         </div>
 
         {/* Fanned character spread */}

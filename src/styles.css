@@ -455,6 +455,25 @@ select {
   }
 }
 
+/* On phones (portrait) keep the setup brand-light so Start sits high on the first
+   screen: shrink the (header-duplicated) hero and drop the decorative card fan. */
+@media (max-width: 640px) {
+  .setup-screen {
+    gap: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .setup-screen h2 {
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .setup-card-spread {
+    display: none;
+  }
+}
+
 /* On short viewports (landscape phones/tablets) compact the setup hero so the
    Start control surfaces with little or no scrolling. */
 @media (max-height: 560px) {
