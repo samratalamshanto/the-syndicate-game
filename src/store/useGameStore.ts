@@ -193,7 +193,7 @@ const savedProfileState = normalizeProfile(savedProfile);
 export const useGameStore = create<GameStore>((set, get) => ({
   game: savedGame,
   language: savedSettings?.language ?? 'en',
-  theme: savedSettings?.theme ?? 'light',
+  theme: savedSettings?.theme ?? 'dark',
   soundMuted: savedSettings?.soundMuted ?? true,
   series: defaultSeries(savedSettings?.seriesLength ?? 1),
   profile: savedProfileState,

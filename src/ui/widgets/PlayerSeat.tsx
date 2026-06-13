@@ -94,7 +94,7 @@ export const PlayerSeat = ({
           >
             {isHuman ? <User size={isFelt ? 12 : 15} /> : initials}
             {player.isEliminated ? (
-              <span className="absolute -right-2 -top-2 rounded-full bg-alert px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+              <span className="absolute -right-2 -top-2 rounded-full bg-alert px-1.5 py-0.5 text-[10px] font-black uppercase text-white">
                 out
               </span>
             ) : null}
@@ -109,7 +109,7 @@ export const PlayerSeat = ({
             )}
           </div>
         </div>
-        <div ref={coinRef} className={`surface-control flex min-w-0 shrink-0 items-center gap-1 rounded-full border font-black ${player.money === null ? 'px-1.5 py-1' : isFelt ? 'max-w-[5.25rem] px-1 py-0.5 text-[9px]' : 'max-w-[5.25rem] px-2 py-1 text-[11px]'}`} aria-label={player.money === null ? t.common.hidden : `${player.money} coins`}>
+        <div ref={coinRef} className={`surface-control flex min-w-0 shrink-0 items-center gap-1 rounded-full border font-black ${player.money === null ? 'px-1.5 py-1' : isFelt ? 'max-w-[5.25rem] px-1 py-0.5 text-[10px]' : 'max-w-[5.25rem] px-2 py-1 text-[11px]'}`} aria-label={player.money === null ? t.common.hidden : `${player.money} coins`}>
           <span className={`relative grid place-items-center rounded-full border border-token-soft bg-[var(--surface-muted)] ${isFelt ? 'h-4 w-4' : 'h-5 w-5'}`}>
             <span className="absolute inset-[3px] rounded-full border border-night/25" />
             <CircleDollarSign size={isFelt ? 10 : 12} className="relative text-brass" />

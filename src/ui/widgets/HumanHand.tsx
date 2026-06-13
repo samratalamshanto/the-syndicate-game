@@ -117,7 +117,7 @@ export const HumanHand = ({ player, isActive, flash = false, variant = 'panel', 
           )}
         </div>
         {player.aliveCards === 1 ? (
-          <span className="shrink-0 rounded-full border border-ember bg-ember/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-ember">
+          <span className="shrink-0 rounded-full border border-ember bg-ember/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-ember">
             {t.common.lastCard}
           </span>
         ) : null}
