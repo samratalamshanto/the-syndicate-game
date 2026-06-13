@@ -24,6 +24,26 @@ export const rulesContent = (language: Language): RuleSection[] =>
           ],
         },
         {
+          title: 'অ্যাকশন ও খরচ',
+          lines: [
+            'Take 1: +১ কয়েন। নিরাপদ — দাবি লাগে না, ব্লক করা যায় না।',
+            'Take 2: +২ কয়েন। দাবিকৃত Leader এটি ব্লক করতে পারে।',
+            'Tax (Leader): +৩ কয়েন।',
+            'Steal (Thief): টার্গেট থেকে সর্বোচ্চ ২ কয়েন নিন। দাবিকৃত Helper ব্লক করতে পারে।',
+            'Exchange (Helper): দুটি কার্ড টেনে সেরাটি রাখুন।',
+            'Attack (Police): ৩ কয়েন দিয়ে টার্গেটের একটি কার্ড নষ্ট করুন। দাবিকৃত Reporter ব্লক করতে পারে।',
+            'Eliminate: ৭ কয়েন দিয়ে টার্গেটের একটি কার্ড নষ্ট করুন। ব্লক করা যায় না।',
+          ],
+        },
+        {
+          title: 'ব্লক ও প্রতিক্রিয়া',
+          lines: [
+            'অ্যাকশন ঘোষণার পর প্রতিপক্ষরা অল্প সময়ের মধ্যে দাবি চ্যালেঞ্জ বা ব্লক করতে পারে।',
+            'Leader → Take 2 ব্লক করে, Helper → Steal ব্লক করে, Reporter → Attack ব্লক করে। ব্লককেও চ্যালেঞ্জ করা যায়।',
+            'চ্যালেঞ্জে হারানো কার্ড প্রকাশ্যে দেখানো হয়; Attack ও Eliminate-এ হারানো কার্ড গোপনে ডেকে ফেরত যায়।',
+          ],
+        },
+        {
           title: 'উদাহরণ',
           lines: [
             'আপনি CEO দাবি করলেন। বট চ্যালেঞ্জ করল। আপনার CEO সত্য হলে বট একটি কার্ড হারাবে, তারপর আপনি CEO কার্ড ডেকে ফেরত দিয়ে নতুন কার্ড বেছে নেবেন।',
@@ -45,6 +65,26 @@ export const rulesContent = (language: Language): RuleSection[] =>
             'When a player claims a role, anyone may challenge that claim.',
             'If the claim was false, the actor loses one card.',
             'If the claim was true, the challenger loses one card. The actor returns the proven card to the deck, then chooses a replacement card from the deck.',
+          ],
+        },
+        {
+          title: 'Actions & Costs',
+          lines: [
+            'Take 1: +1 coin. Safe — no claim, cannot be blocked.',
+            'Take 2: +2 coins. A claimed Leader can block it.',
+            'Tax (Leader): +3 coins.',
+            'Steal (Thief): take up to 2 coins from a target. A claimed Helper can block it.',
+            'Exchange (Helper): draw two cards and keep the best.',
+            'Attack (Police): pay 3 to make a target lose a card. A claimed Reporter can block it.',
+            'Eliminate: pay 7 to make a target lose a card. Cannot be blocked.',
+          ],
+        },
+        {
+          title: 'Blocks & Reactions',
+          lines: [
+            'After an action is announced, opponents get a short window to challenge the claim or block it.',
+            'Leader blocks Take 2, Helper blocks Steal, Reporter blocks Attack. A block can itself be challenged.',
+            'Challenge losses are revealed publicly; Attack and Eliminate losses are returned to the deck face down.',
           ],
         },
         {
