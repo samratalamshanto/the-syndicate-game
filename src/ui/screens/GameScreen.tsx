@@ -647,28 +647,27 @@ export const GameScreen = () => {
                 disabled={disabled}
                 aria-label={role && !humanRoles.includes(role) ? `${t.actions[type]} — ${t.common.bluffWarning}` : t.actions[type]}
                 onClick={() => chooseAction(type)}
-                className={`action-choice relative min-h-[4.25rem] rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-brass ${
+                className={`action-choice min-h-[4.25rem] rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-brass ${
                   disabled ? 'cursor-not-allowed opacity-60' : ''
                 }`}
               >
-                {/* Tell the player whether this role-claim action is truthful or a bluff. */}
-                {role ? (
-                  humanRoles.includes(role) ? (
-                    <ShieldCheck size={13} className="absolute right-1.5 top-1.5 text-success" aria-hidden="true" />
-                  ) : (
-                    <span
-                      className="bg-warn-soft text-warn absolute right-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide"
-                      aria-hidden="true"
-                    >
-                      {t.common.bluffTag}
-                    </span>
-                  )
-                ) : null}
                 <span className="block font-display text-base font-black leading-tight text-app sm:text-lg">
                   {label.title}
                 </span>
-                <span className={`mt-1 block text-xs font-black leading-tight ${disabled ? 'text-ember' : role ? 'text-brass' : 'text-success'}`}>
-                  {disabled ? formatMessage(t.common.needCoins, { n: unaffordableBy(type) }) : label.note}
+                <span className="mt-1 flex flex-wrap items-center gap-1 text-xs font-black leading-tight">
+                  {/* Truthful claim vs bluff, shown inline so it never covers the role name. */}
+                  {role ? (
+                    humanRoles.includes(role) ? (
+                      <ShieldCheck size={12} className="shrink-0 text-success" aria-hidden="true" />
+                    ) : (
+                      <span className="bg-warn text-night shrink-0 rounded px-1 py-px text-[9px] font-black uppercase tracking-wide" aria-hidden="true">
+                        {t.common.bluffTag}
+                      </span>
+                    )
+                  ) : null}
+                  <span className={disabled ? 'text-ember' : role ? 'text-brass' : 'text-success'}>
+                    {disabled ? formatMessage(t.common.needCoins, { n: unaffordableBy(type) }) : label.note}
+                  </span>
                 </span>
               </button>
             );
@@ -763,25 +762,20 @@ export const GameScreen = () => {
           </button>
         </div>
 
-        <div className="surface-control absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5">
+        {/* Round + current phase, kept top-left so it never covers the top opponent. */}
+        <div className="surface-control absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-xs font-black uppercase tracking-widest">
           <Sparkles size={13} className="text-brass" />
-          <span className="font-display text-xs font-black uppercase tracking-widest">
+          <span>
             <span className="hidden xs:inline">round </span>
             {Math.floor(game.turnCount / Math.max(1, game.players.length)) + 1}
           </span>
+          {!isComplete ? (
+            <>
+              <span className="text-app-muted opacity-40">·</span>
+              <span className="text-accent">{phaseSteps.find((step) => step.key === livePhase)?.label}</span>
+            </>
+          ) : null}
         </div>
-
-        {/* Persistent phase indicator: which beat of the turn we're on */}
-        {!isComplete ? (
-          <div className="surface-control pointer-events-none absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-widest backdrop-blur">
-            {phaseSteps.map((step, index) => (
-              <span key={step.key} className="flex items-center gap-1">
-                <span className={step.key === livePhase ? 'text-accent' : 'text-app-muted opacity-50'}>{step.label}</span>
-                {index < phaseSteps.length - 1 ? <span className="text-app-muted opacity-30">›</span> : null}
-              </span>
-            ))}
-          </div>
-        ) : null}
 
         {isSpectating ? (
           <div className="surface-control absolute left-3 top-14 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-success backdrop-blur">

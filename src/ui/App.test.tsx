@@ -7,6 +7,9 @@ import { App } from './App';
 describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
+    // These tests exercise the in-game flow, not the first-run tutorial; act as a
+    // returning player so tapping Start launches the game directly.
+    localStorage.setItem('syndicate.introSeen', '1');
     useGameStore.setState({
       game: null,
       language: 'en',

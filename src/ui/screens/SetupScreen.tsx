@@ -1,5 +1,5 @@
 import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
 import { GuidePanel } from '../widgets/GuidePanel';
@@ -31,15 +31,16 @@ export const SetupScreen = () => {
   const [guideOpen, setGuideOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
-  // First-run teaching: run the interactive tutorial once so new players learn the
-  // objective, the roles, and how challenges work before they start.
-  useEffect(() => {
-    if (typeof localStorage === 'undefined') return;
-    if (!localStorage.getItem('syndicate.introSeen')) {
-      setTutorialOpen(true);
+  // First-run teaching happens AFTER the player commits to Start (clean first screen
+  // first), not as a modal over setup. On first Start, run the tutorial, then play.
+  const handleStart = () => {
+    if (typeof localStorage !== 'undefined' && !localStorage.getItem('syndicate.introSeen')) {
       localStorage.setItem('syndicate.introSeen', '1');
+      setTutorialOpen(true);
+      return;
     }
-  }, []);
+    startGame();
+  };
   const [profileOpen, setProfileOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
@@ -261,7 +262,7 @@ export const SetupScreen = () => {
           <div className="grid gap-3">
             <button
               type="button"
-              onClick={startGame}
+              onClick={handleStart}
               className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-success px-6 py-4 font-display text-lg font-black text-white shadow-card hover:brightness-110"
             >
               <Play size={20} />
@@ -271,7 +272,14 @@ export const SetupScreen = () => {
         </div>
 
       </div>
-      {tutorialOpen ? <Tutorial onClose={() => setTutorialOpen(false)} /> : null}
+      {tutorialOpen ? (
+        <Tutorial
+          onClose={() => {
+            setTutorialOpen(false);
+            startGame();
+          }}
+        />
+      ) : null}
       <Modal
         open={guideOpen}
         onClose={() => setGuideOpen(false)}

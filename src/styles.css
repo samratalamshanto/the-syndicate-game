@@ -197,6 +197,10 @@ select {
   color: var(--warn);
 }
 
+.bg-warn {
+  background: var(--warn);
+}
+
 .bg-warn-soft {
   background: color-mix(in srgb, var(--warn) 18%, transparent);
 }
