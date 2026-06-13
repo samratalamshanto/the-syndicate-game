@@ -79,37 +79,28 @@ export const GameCard = (props: Props) => {
   }
 
   const copy = t.roles[props.role];
-  if (props.yours) {
-    return (
-      <div className={`${frameClass} surface-strong overflow-hidden border border-token after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-brass`} style={frameStyle}>
-        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${roleColors[props.role]}`} />
-        <div className="absolute inset-1.5 bottom-7 overflow-hidden rounded-md border border-token-soft bg-[var(--surface-muted)]">
-          <RolePortrait role={props.role} fill />
-        </div>
-        <div className="absolute inset-x-1.5 bottom-1.5 z-10 rounded-md bg-[var(--surface-muted)] px-1.5 py-1">
-          <p className="text-center font-display text-xs font-black leading-tight text-app sm:text-sm">
-            {copy.name}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Larger cards (hand, choice prompts, desktop) carry the ability text so players can
+  // read what a role does without opening the guide. Tiny cards stay name-only.
+  const showAbility = size === 'md' || size === 'lg';
 
   return (
-    <div className={`${frameClass} surface-strong overflow-hidden border border-token ${props.yours ? 'after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:bg-brass' : ''}`} style={frameStyle}>
+    <div className={`${frameClass} surface-strong overflow-hidden border border-token`} style={frameStyle}>
       <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${roleColors[props.role]}`} />
-      <div className="absolute inset-0 flex flex-col pt-2">
-        <div className="px-2 text-center">
-          <p className="font-display text-[11px] font-black leading-tight text-app sm:text-base">
-            {copy.name}
-          </p>
+      <div className="absolute inset-0 flex flex-col gap-1 p-1.5 pt-2">
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-token-soft bg-[var(--surface-muted)]">
+          <RolePortrait role={props.role} fill />
         </div>
-        <div className="min-h-0 flex-1 px-2 py-1.5">
-          <div className="h-full overflow-hidden rounded-md border border-token-soft bg-[var(--surface-muted)]">
-            <RolePortrait role={props.role} fill />
-          </div>
+        <div className="rounded-md bg-[var(--surface-muted)] px-1.5 py-1 text-center">
+          <p className="font-display text-[11px] font-black leading-tight text-app sm:text-sm">{copy.name}</p>
+          {showAbility ? (
+            <>
+              <p className="mt-0.5 text-[10px] font-bold leading-snug text-app sm:text-[11px]">{copy.power}</p>
+              <p className="text-[10px] font-semibold leading-snug text-app-muted sm:text-[11px]">{copy.counter}</p>
+            </>
+          ) : null}
         </div>
       </div>
+      {props.yours ? <div className="absolute inset-x-2 bottom-0 h-0.5 bg-brass" /> : null}
     </div>
   );
 };

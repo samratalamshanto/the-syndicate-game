@@ -626,10 +626,10 @@ export const GameScreen = () => {
                   disabled ? 'cursor-not-allowed opacity-60' : ''
                 }`}
               >
-                <span className="block truncate font-display text-base font-black leading-tight text-app sm:text-lg">
+                <span className="block font-display text-base font-black leading-tight text-app sm:text-lg">
                   {label.title}
                 </span>
-                <span className={`mt-1 block truncate text-xs font-black ${disabled ? 'text-ember' : role ? 'text-brass' : 'text-success'}`}>
+                <span className={`mt-1 block text-xs font-black leading-tight ${disabled ? 'text-ember' : role ? 'text-brass' : 'text-success'}`}>
                   {disabled ? formatMessage(t.common.needCoins, { n: unaffordableBy(type) }) : label.note}
                 </span>
               </button>
