@@ -1,5 +1,5 @@
 import { ArrowRight, Award, Bot, BookOpen, Lock, Play, RotateCcw, Trophy, Users, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { translations } from '../../i18n/translations';
 import { GuidePanel } from '../widgets/GuidePanel';
@@ -31,6 +31,16 @@ export const SetupScreen = () => {
   } = useGameStore();
   const t = translations[language];
   const [guideOpen, setGuideOpen] = useState(false);
+
+  // First-run teaching: open the how-to-play once so new players see the objective,
+  // the roles, and how challenges work before they start.
+  useEffect(() => {
+    if (typeof localStorage === 'undefined') return;
+    if (!localStorage.getItem('syndicate.introSeen')) {
+      setGuideOpen(true);
+      localStorage.setItem('syndicate.introSeen', '1');
+    }
+  }, []);
   const [profileOpen, setProfileOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);

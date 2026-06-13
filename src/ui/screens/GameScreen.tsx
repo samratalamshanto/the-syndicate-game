@@ -366,6 +366,23 @@ export const GameScreen = () => {
   const reactPromptActive = botTurn.phase === 'awaitReaction' && botTurn.action !== null && game.pendingChoice === null;
   const counterChallengeChoice = humanPendingChoice?.kind === 'counterChallenge' ? humanPendingChoice : null;
   const seriesWinner = series.humanWins > series.botWins ? human : winner;
+
+  // Which beat of the turn the table is on, for the persistent phase indicator.
+  const livePhase: 'action' | 'challenge' | 'resolve' =
+    reactPromptActive || counterChallengeChoice || botTurn.phase === 'awaitReaction'
+      ? 'challenge'
+      : botTurn.phase === 'resolving' ||
+          Boolean(revealEvent || cardLossEvent || challengeEvent) ||
+          humanPendingChoice?.kind === 'revealCard' ||
+          humanPendingChoice?.kind === 'replaceProvenCard' ||
+          humanPendingChoice?.kind === 'exchangeKeep'
+        ? 'resolve'
+        : 'action';
+  const phaseSteps: Array<{ key: typeof livePhase; label: string }> = [
+    { key: 'action', label: t.common.phaseAction },
+    { key: 'challenge', label: t.common.phaseChallenge },
+    { key: 'resolve', label: t.common.phaseResolve },
+  ];
   const summaryLines = gameSummary
     ? [
         formatMessage(t.common.roundCount, { value: gameSummary.roundCount }),
@@ -739,6 +756,18 @@ export const GameScreen = () => {
             {Math.floor(game.turnCount / Math.max(1, game.players.length)) + 1}
           </span>
         </div>
+
+        {/* Persistent phase indicator: which beat of the turn we're on */}
+        {!isComplete ? (
+          <div className="surface-control pointer-events-none absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-widest backdrop-blur">
+            {phaseSteps.map((step, index) => (
+              <span key={step.key} className="flex items-center gap-1">
+                <span className={step.key === livePhase ? 'text-accent' : 'text-app-muted opacity-50'}>{step.label}</span>
+                {index < phaseSteps.length - 1 ? <span className="text-app-muted opacity-30">›</span> : null}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {isSpectating ? (
           <div className="surface-control absolute left-3 top-14 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-success backdrop-blur">
