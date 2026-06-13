@@ -657,7 +657,7 @@ export const GameScreen = () => {
                     <ShieldCheck size={13} className="absolute right-1.5 top-1.5 text-success" aria-hidden="true" />
                   ) : (
                     <span
-                      className="absolute right-1.5 top-1.5 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-700 dark:text-amber-400"
+                      className="bg-warn-soft text-warn absolute right-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide"
                       aria-hidden="true"
                     >
                       {t.common.bluffTag}
