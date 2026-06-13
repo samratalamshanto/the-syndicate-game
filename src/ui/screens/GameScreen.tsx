@@ -712,7 +712,7 @@ export const GameScreen = () => {
             className="surface-control inline-flex min-h-10 min-w-10 items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold backdrop-blur hover:bg-[var(--control-hover)]"
             aria-label="Log"
           >
-            <ScrollText size={14} /> <span className="hidden xs:inline">log</span>
+            <ScrollText size={14} /> <span className="hidden xs:inline">{t.common.log}</span>
           </button>
           <button
             type="button"

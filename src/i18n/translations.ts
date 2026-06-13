@@ -292,7 +292,7 @@ const dailyEn: Translation = {
     challengeResultTruth: "{actor}'s {role} claim was true.",
     challengeOneLineLiar: '{challenger} caught {actor} bluffing {role}.',
     challengeOneLineTruth: "{challenger} doubted {actor}'s {role}. {challenger} was wrong.",
-    challengeLoserLine: '{player} loses a card',
+    challengeLoserLine: '{player} lost a card',
     react: 'React',
     reactPrompt: 'How do you react?',
     challengeAction: 'Challenge bluff',
@@ -381,7 +381,7 @@ const dailyEn: Translation = {
     secondsShort: '{n}s',
     lastEvent: {
       claim: '{actor} claimed {role} → wants {amount} coins',
-      challengeWon: "{actor} called {target}'s bluff — {target} lost a card",
+      challengeWon: '{actor} caught {target} bluffing — {target} lost a card',
       challengeLost: '{actor} challenged {target} — {actor} lost a card',
       blocked: "{actor} blocked {target}'s {action}",
       gameStart: "Game started — {actor}'s turn",
@@ -589,7 +589,7 @@ const dailyBn: Translation = {
     challengeOneLineLiar: '{challenger} {actor}-এর {role} মিথ্যা ধরেছে।',
     // TODO: native bn review before merge.
     challengeOneLineTruth: '{challenger} {actor}-এর {role} সন্দেহ করেছে। {challenger} ভুল ছিল।',
-    challengeLoserLine: '{player} একটি কার্ড হারাবে',
+    challengeLoserLine: '{player} একটি কার্ড হারিয়েছে',
     react: 'প্রতিক্রিয়া',
     reactPrompt: 'কীভাবে প্রতিক্রিয়া দেবেন?',
     challengeAction: 'মিথ্যা ধরুন',
