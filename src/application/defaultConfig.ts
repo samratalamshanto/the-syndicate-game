@@ -1,11 +1,17 @@
 import type { GameConfig } from '../domain/game/types';
 
-export const createDefaultConfig = (playerCount: number, botDifficulty: GameConfig['botDifficulty'], seed?: string): GameConfig => {
+export const createDefaultConfig = (
+  playerCount: number,
+  botDifficulty: GameConfig['botDifficulty'],
+  seed?: string,
+  humanCount = 1,
+): GameConfig => {
   const copies = Math.max(3, Math.ceil((playerCount * 2 + 3) / 5));
 
   return {
     playerCount,
     humanPlayerId: 'player-1',
+    humanCount: Math.max(1, Math.min(humanCount, playerCount - 1)),
     startingMoney: 2,
     maxMoney: 10,
     cardsPerPlayer: 2,

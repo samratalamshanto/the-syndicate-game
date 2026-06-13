@@ -17,6 +17,7 @@ import { EliminatedPrompt } from '../widgets/EliminatedPrompt';
 import { GuidePanel } from '../widgets/GuidePanel';
 import { HumanHand } from '../widgets/HumanHand';
 import { Modal } from '../widgets/Modal';
+import { PassCurtain } from '../widgets/PassCurtain';
 import { PayoffBanner } from '../widgets/PayoffBanner';
 import { PlayerSeat } from '../widgets/PlayerSeat';
 import { ReactPrompt } from '../widgets/ReactPrompt';
@@ -191,13 +192,31 @@ export const GameScreen = () => {
         : 'desktop';
   const isDesktop = layoutMode === 'desktop';
   const reactWindowMs = reactTimerSeconds > 0 ? reactTimerSeconds * 1000 : 0;
+
+  // Pass & play: several seats are humans sharing this device. The "viewer" is the
+  // human currently holding it; the board renders from their perspective and a
+  // privacy curtain covers the screen while it is handed to the next human.
+  const localHumanIds = useMemo(
+    () => (game ? game.players.filter((player) => player.kind === 'human').map((player) => player.id) : []),
+    [game],
+  );
+  const isPassAndPlay = localHumanIds.length > 1;
+  const primaryHumanId = game?.config.humanPlayerId ?? '';
+  const [deviceHolderId, setDeviceHolderId] = useState(primaryHumanId);
+  const viewerId = isPassAndPlay ? deviceHolderId : primaryHumanId;
+
   const isHumanTurnSignal = Boolean(
     game &&
-      game.currentPlayerId === game.config.humanPlayerId &&
+      game.currentPlayerId === viewerId &&
       game.phase !== 'complete' &&
       game.pendingChoice === null &&
       spectatorMode !== 'choose',
   );
+
+  // Reset the device holder to the first human whenever a new match begins.
+  useEffect(() => {
+    setDeviceHolderId(primaryHumanId);
+  }, [game?.id, primaryHumanId]);
 
   useEffect(() => {
     setPendingAction(null);
@@ -209,7 +228,7 @@ export const GameScreen = () => {
       game.phase === 'complete' ||
       game.pendingChoice !== null ||
       spectatorMode === 'choose' ||
-      game.currentPlayerId === game.config.humanPlayerId
+      localHumanIds.includes(game.currentPlayerId)
     ) {
       setBotTurn({ phase: 'idle', actorId: null, action: null });
       return undefined;
@@ -243,7 +262,7 @@ export const GameScreen = () => {
     const timer = window.setTimeout(() => {
       setBotTurn((currentTurn) => ({
         ...currentTurn,
-        ...(currentTurn.action && canHumanReact(currentTurn.action, game)
+        ...(!isPassAndPlay && currentTurn.action && canHumanReact(currentTurn.action, game)
           ? { phase: 'awaitReaction' as const }
           : {
               phase: 'resolving' as const,
@@ -331,8 +350,8 @@ export const GameScreen = () => {
   }, [clearFlavorEvent, flavorEvent]);
 
   const human = useMemo(
-    () => game?.players.find((p) => p.id === game.config.humanPlayerId) ?? null,
-    [game],
+    () => game?.players.find((p) => p.id === viewerId) ?? null,
+    [game, viewerId],
   );
   const humanMoney = human?.money ?? 0;
   const disabledByCost: Partial<Record<ActionType, boolean>> = {
@@ -366,6 +385,19 @@ export const GameScreen = () => {
   const reactPromptActive = botTurn.phase === 'awaitReaction' && botTurn.action !== null && game.pendingChoice === null;
   const counterChallengeChoice = humanPendingChoice?.kind === 'counterChallenge' ? humanPendingChoice : null;
   const seriesWinner = series.humanWins > series.botWins ? human : winner;
+
+  // The human who must act/choose right now. When that is someone other than the
+  // current device holder, raise the privacy curtain before revealing their hand.
+  const needsDevice =
+    !isPassAndPlay || isComplete
+      ? null
+      : game.pendingChoice && localHumanIds.includes(game.pendingChoice.playerId)
+        ? game.pendingChoice.playerId
+        : game.pendingChoice === null && localHumanIds.includes(game.currentPlayerId)
+          ? game.currentPlayerId
+          : null;
+  const showCurtain = needsDevice !== null && needsDevice !== deviceHolderId;
+  const nextHolderName = needsDevice ? game.players.find((p) => p.id === needsDevice)?.name ?? '' : '';
 
   // Which beat of the turn the table is on, for the persistent phase indicator.
   const livePhase: 'action' | 'challenge' | 'resolve' =
@@ -1160,6 +1192,10 @@ export const GameScreen = () => {
           </ul>
         )}
       </Modal>
+
+      {showCurtain ? (
+        <PassCurtain name={nextHolderName} onReveal={() => setDeviceHolderId(needsDevice!)} />
+      ) : null}
     </section>
   );
 };

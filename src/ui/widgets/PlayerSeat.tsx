@@ -103,7 +103,7 @@ export const PlayerSeat = ({
             <p className={`max-w-full truncate rounded-full px-2 py-0.5 font-display font-black ${isActive && !player.isEliminated ? 'bg-brass text-night' : ''} ${isFelt ? 'text-xs' : 'text-sm'}`}>{player.name}</p>
             {density === 'compact' || isPhone || mini ? null : (
               <p className="text-app-muted text-[10px] uppercase tracking-widest">
-                {isHuman ? 'You' : persona ? t.bot.style[persona.style] : 'Bot'}
+                {isHuman ? t.common.humanLabel : persona ? t.bot.style[persona.style] : 'Bot'}
                 {player.isEliminated ? ' · out' : ''}
               </p>
             )}

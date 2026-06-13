@@ -8,7 +8,7 @@ import { botPersonas } from '../config/botPersonas';
 import { createGame, resolveAction } from '../domain/game/engine';
 import { dailySeed } from '../domain/game/random';
 import type { ActionType, BotDifficulty, GameAction, GameState, PrimaryGameAction, RoleId } from '../domain/game/types';
-import type { Language } from '../i18n/translations';
+import { translations, type Language } from '../i18n/translations';
 import type { BotReaction } from '../ports/BotStrategy';
 import type { AchievementState, ProfileState } from '../ports/GameStorage';
 
@@ -115,6 +115,7 @@ type GameStore = {
   coinEvent: CoinEvent | null;
   spectatorMode: SpectatorMode;
   playerCount: number;
+  humanCount: number;
   botDifficulty: BotDifficulty;
   reactTimerSeconds: number;
   forcedLandscape: boolean;
@@ -144,6 +145,7 @@ type GameStore = {
   clearAchievementToast(id?: string): void;
   setSpectatorMode(mode: SpectatorMode): void;
   setPlayerCount(playerCount: number): void;
+  setHumanCount(humanCount: number): void;
   setBotDifficulty(botDifficulty: BotDifficulty): void;
   setReactTimerSeconds(seconds: number): void;
   setForcedLandscape(value: boolean): void;
@@ -209,12 +211,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   coinEvent: null,
   spectatorMode: null,
   playerCount: 4,
+  humanCount: 1,
   botDifficulty: 'medium',
   reactTimerSeconds: savedSettings?.reactTimerSeconds ?? 12,
   forcedLandscape: false,
   startGame() {
     resetBotMemory();
-    const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
+    const game = buildGame(get().playerCount, get().botDifficulty, get().humanCount, get().language);
     browserStorage.saveGame(game);
     set({
       game,
@@ -232,7 +235,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   startDailyGame() {
     resetBotMemory();
-    const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty, dailySeed())));
+    const game = buildGame(get().playerCount, get().botDifficulty, 1, get().language, dailySeed());
     browserStorage.saveGame(game);
     set({
       game,
@@ -251,7 +254,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   newGame() {
     browserStorage.clearGame();
     resetBotMemory();
-    const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
+    const game = buildGame(get().playerCount, get().botDifficulty, get().humanCount, get().language);
     browserStorage.saveGame(game);
     set({
       game,
@@ -285,7 +288,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
   nextRound() {
-    const game = assignBotPersonas(createGame(createDefaultConfig(get().playerCount, get().botDifficulty)));
+    const game = buildGame(get().playerCount, get().botDifficulty, get().humanCount, get().language);
     browserStorage.saveGame(game);
     set({
       game,
@@ -329,9 +332,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
     const next = resolveAction(game, action);
     observeBotMemory(game, next, action);
-    const nextSeries = updateSeries(get().series, game, next);
-    const profileUpdate = updateProfile(get().profile, game, next);
-    const achievementUpdate = updateAchievements(get().profile, profileUpdate?.profile ?? get().profile, game, next, action, nextSeries);
+    // Lifetime stats, series scoring, achievements and auto-spectate track a single
+    // human; in pass & play (multiple humans) those concepts don't apply, so skip them.
+    const solo = (game.config.humanCount ?? 1) === 1;
+    const nextSeries = solo ? updateSeries(get().series, game, next) : get().series;
+    const profileUpdate = solo ? updateProfile(get().profile, game, next) : null;
+    const achievementUpdate = solo
+      ? updateAchievements(get().profile, profileUpdate?.profile ?? get().profile, game, next, action, nextSeries)
+      : { profile: get().profile, unlockedId: null as string | null };
     const nextProfile = achievementUpdate.profile;
     if (profileUpdate || achievementUpdate.unlockedId) {
       browserStorage.saveProfile(nextProfile);
@@ -353,7 +361,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       payoffEvent: createPayoffEvent(game, next, action),
       flavorEvent: createFlavorEvent(game, next, action),
       gameSummary: next.phase === 'complete' && game.phase !== 'complete' ? createGameSummary(next) : get().gameSummary,
-      spectatorMode: nextSpectatorMode(game, next, get().spectatorMode),
+      spectatorMode: solo ? nextSpectatorMode(game, next, get().spectatorMode) : null,
     });
   },
   chooseBotAction() {
@@ -467,7 +475,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ spectatorMode: mode });
   },
   setPlayerCount(playerCount) {
-    set({ playerCount });
+    // Keep at least one bot so the challenge layer always exists in pass & play.
+    set({ playerCount, humanCount: Math.min(get().humanCount, playerCount - 1) });
+  },
+  setHumanCount(humanCount) {
+    set({ humanCount: Math.max(1, Math.min(humanCount, get().playerCount - 1)) });
   },
   setBotDifficulty(botDifficulty) {
     set({ botDifficulty });
@@ -502,6 +514,31 @@ const nextSpectatorMode = (prev: GameState, next: GameState, current: SpectatorM
   }
   return shouldChooseSpectatorMode(prev, next) ? 'choose' : current;
 };
+
+// Pass & play: rename human seats to "Player N" (solo keeps the engine's "You").
+const assignHumanNames = (game: GameState, label: string): GameState => {
+  if ((game.config.humanCount ?? 1) <= 1) {
+    return game;
+  }
+  return {
+    ...game,
+    players: game.players.map((player, index) =>
+      player.kind === 'human' ? { ...player, name: `${label} ${index + 1}` } : player,
+    ),
+  };
+};
+
+const buildGame = (
+  playerCount: number,
+  botDifficulty: BotDifficulty,
+  humanCount: number,
+  language: Language,
+  seed?: string,
+): GameState =>
+  assignHumanNames(
+    assignBotPersonas(createGame(createDefaultConfig(playerCount, botDifficulty, seed, humanCount))),
+    translations[language].common.playerLabel,
+  );
 
 const assignBotPersonas = (game: GameState): GameState => {
   let botIndex = 0;

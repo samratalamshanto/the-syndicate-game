@@ -59,13 +59,15 @@ const canReact = (state: GameState, actorId: string, reactorId: string): boolean
 
 export const createGame = (config: GameConfig, random: RandomSource = config.seed ? seededRandom(config.seed) : Math.random): GameState => {
   const deck = shuffle(createDeck(config), random);
+  const humanCount = Math.max(1, config.humanCount ?? 1);
   const players: Player[] = Array.from({ length: config.playerCount }, (_, index) => {
     const id = `player-${index + 1}`;
+    const isHuman = index < humanCount;
     const cards = deck.splice(0, config.cardsPerPlayer);
     return {
       id,
-      name: id === config.humanPlayerId ? 'You' : `Bot ${index}`,
-      kind: id === config.humanPlayerId ? 'human' : 'bot',
+      name: isHuman ? (index === 0 ? 'You' : `Player ${index + 1}`) : `Bot ${index}`,
+      kind: isHuman ? 'human' : 'bot',
       money: config.startingMoney,
       cards,
     };

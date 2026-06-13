@@ -93,6 +93,21 @@ describe('game engine', () => {
     expect(game.botMemory).toEqual({});
   });
 
+  it('seats the first humanCount players as humans for pass & play', () => {
+    const game = createGame({ ...config, playerCount: 4, humanCount: 3 }, () => 0.1);
+    const kinds = game.players.map((player) => player.kind);
+
+    expect(kinds).toEqual(['human', 'human', 'human', 'bot']);
+    expect(game.players[0].name).toBe('You');
+    expect(game.players[1].name).toBe('Player 2');
+    expect(game.currentPlayerId).toBe('player-1');
+  });
+
+  it('defaults to a single human when humanCount is omitted', () => {
+    const game = createGame(config, () => 0.1);
+    expect(game.players.filter((player) => player.kind === 'human')).toHaveLength(1);
+  });
+
   it('caps money at 10 and hides opponent totals from a player view', () => {
     const afterTax = resolveAction(riggedState(), {
       type: 'tax',
