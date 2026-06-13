@@ -23,6 +23,7 @@ import { ReactPrompt } from '../widgets/ReactPrompt';
 import { RevealMoment } from '../widgets/RevealMoment';
 import { TableCenter } from '../widgets/TableCenter';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { playSound } from '../../adapters/sound';
 
 type PendingAction = Extract<ActionType, 'steal' | 'attack' | 'eliminate'> | null;
 type OverlayKey = 'guide' | 'log' | null;
@@ -130,9 +131,6 @@ const botReactionAction = (
   return null;
 };
 
-const playSound = (_name: 'coin' | 'reveal' | 'eliminate' | 'turn', muted: boolean) => {
-  if (muted) return;
-};
 
 export const GameScreen = () => {
   const {
@@ -293,6 +291,16 @@ export const GameScreen = () => {
     if (!cardLossEvent) return;
     playSound(cardLossEvent.eliminated ? 'eliminate' : 'reveal', soundMuted);
   }, [cardLossEvent, soundMuted]);
+
+  useEffect(() => {
+    if (!challengeEvent) return;
+    playSound('challenge', soundMuted);
+  }, [challengeEvent, soundMuted]);
+
+  useEffect(() => {
+    if (game?.phase !== 'complete' || !game.winnerId) return;
+    playSound('win', soundMuted);
+  }, [game?.phase, game?.winnerId, soundMuted]);
 
   useEffect(() => {
     if (!game) {
