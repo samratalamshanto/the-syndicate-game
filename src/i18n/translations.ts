@@ -101,6 +101,8 @@ type Translation = {
     phaseAction: string;
     phaseChallenge: string;
     phaseResolve: string;
+    bluffTag: string;
+    bluffWarning: string;
     inHand: string;
     outOfTime: string;
     counterChallengePrompt: string;
@@ -310,6 +312,8 @@ const dailyEn: Translation = {
     phaseAction: 'Action',
     phaseChallenge: 'Challenge',
     phaseResolve: 'Resolve',
+    bluffTag: 'Bluff',
+    bluffWarning: 'you do not hold this role',
     inHand: 'in hand',
     outOfTime: 'Time up — passed.',
     counterChallengePrompt: 'Counter-challenge the block?',
@@ -615,6 +619,8 @@ const dailyBn: Translation = {
     phaseAction: 'অ্যাকশন',
     phaseChallenge: 'চ্যালেঞ্জ',
     phaseResolve: 'রিভিল',
+    bluffTag: 'ব্লাফ',
+    bluffWarning: 'এই রোলটি আপনার কাছে নেই',
     inHand: 'হাতে আছে',
     outOfTime: 'সময় শেষ — পাস।',
     counterChallengePrompt: 'ব্লক কাউন্টার চ্যালেঞ্জ?',
