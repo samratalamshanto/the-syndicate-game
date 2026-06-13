@@ -1,5 +1,5 @@
 import { Eye, RefreshCcw, Settings, Skull } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { translations } from '../../i18n/translations';
 import { useGameStore } from '../../store/useGameStore';
 import { Modal } from './Modal';
@@ -12,9 +12,22 @@ type Props = {
   compact?: boolean;
 };
 
+const AUTO_WATCH_SECONDS = 6;
+
 export const EliminatedPrompt = ({ onWatch, onSameSettings, onChangeSettings, compact = false }: Props) => {
   const language = useGameStore((state) => state.language);
   const t = translations[language];
+
+  // If the eliminated player doesn't choose, spectate after a short countdown.
+  const [secondsLeft, setSecondsLeft] = useState(AUTO_WATCH_SECONDS);
+  useEffect(() => {
+    if (secondsLeft <= 0) {
+      onWatch();
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setSecondsLeft((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [secondsLeft, onWatch]);
 
   type Choice = { onClick: () => void; icon: ReactNode; iconWrap: string; title: string; subtitle: string; className: string };
   const choices: Choice[] = [
@@ -49,7 +62,7 @@ export const EliminatedPrompt = ({ onWatch, onSameSettings, onChangeSettings, co
       open
       onClose={onWatch}
       title={t.common.youAreOut}
-      subtitle={t.common.spectateOrRestart}
+      subtitle={`${t.common.spectateOrRestart} · ${t.common.watchMatch} ${secondsLeft}s`}
       icon={<Skull size={18} />}
       size={compact ? 'md' : 'lg'}
     >

@@ -213,6 +213,26 @@ type Translation = {
     money: string;
     doubleLoss: string;
   };
+  tutorial: {
+    skip: string;
+    back: string;
+    next: string;
+    play: string;
+    goalTitle: string;
+    handTitle: string;
+    handBody: string;
+    bluffTitle: string;
+    bluffBody: string;
+    challengeTitle: string;
+    challengeBody: string;
+    challengeClaim: string;
+    challengeBtn: string;
+    passBtn: string;
+    challengeWin: string;
+    passResult: string;
+    readyTitle: string;
+    readyBody: string;
+  };
   bot: {
     personas: Record<string, string>;
     style: Record<string, string>;
@@ -463,6 +483,26 @@ const dailyEn: Translation = {
     challenge: 'Anyone can challenge a role claim. Liar loses a card. Wrong challenger loses a card.',
     money: 'You can see only your own money. Opponent totals stay hidden.',
     doubleLoss: 'If {officer} is real and you wrongly challenge, you lose one card for the challenge and one more from the attack.',
+  },
+  tutorial: {
+    skip: 'Skip',
+    back: 'Back',
+    next: 'Next',
+    play: 'Play',
+    goalTitle: 'Goal',
+    handTitle: 'Your cards',
+    handBody: 'You hold two secret roles. Each has a power, and most can block one kind of attack. You can see only your own cards.',
+    bluffTitle: 'Claiming & bluffing',
+    bluffBody: 'On your turn you may claim ANY role — even one you do not hold. Your action buttons show a green check when you truly have the role, or a “Bluff” tag when you do not.',
+    challengeTitle: 'Catch a bluff',
+    challengeBody: 'When someone claims a role, you can challenge it. Try it — an opponent just made a claim:',
+    challengeClaim: '{bot} claims {role} to take 3 coins.',
+    challengeBtn: 'Challenge it',
+    passBtn: 'Let it pass',
+    challengeWin: 'Nice read — {bot} was bluffing and loses a card. But challenge a TRUE claim and you lose one instead.',
+    passResult: 'You passed. Letting bluffs through can be safe — or it can let an opponent run away with the game.',
+    readyTitle: 'You are ready',
+    readyBody: 'Build coins, claim powers, call bluffs, and be the last player with a card. Reopen this anytime from “How to play”.',
   },
   bot: {
     personas: {
@@ -775,6 +815,26 @@ const dailyBn: Translation = {
     challenge: 'যে কেউ চ্যালেঞ্জ করতে পারে। মিথ্যা হলে দাবিদার কার্ড হারায়। ভুল চ্যালেঞ্জ হলে চ্যালেঞ্জার কার্ড হারায়।',
     money: 'আপনি শুধু নিজের টাকা দেখবেন। অন্যদের মোট টাকা লুকানো থাকবে।',
     doubleLoss: '{officer} সত্যি হলে ভুল চ্যালেঞ্জে একটি কার্ড যায়, এরপর আক্রমণে আরেকটি কার্ড যেতে পারে।',
+  },
+  tutorial: {
+    skip: 'বাদ দিন',
+    back: 'পেছনে',
+    next: 'পরবর্তী',
+    play: 'খেলুন',
+    goalTitle: 'লক্ষ্য',
+    handTitle: 'আপনার কার্ড',
+    handBody: 'আপনার দুটি গোপন রোল আছে। প্রতিটির একটি ক্ষমতা আছে এবং বেশিরভাগ এক ধরনের আক্রমণ ব্লক করতে পারে। শুধু নিজের কার্ড দেখতে পাবেন।',
+    bluffTitle: 'দাবি ও ব্লাফ',
+    bluffBody: 'আপনার পালায় যেকোনো রোল দাবি করতে পারেন — এমনকি যেটি আপনার নেই। অ্যাকশন বোতামে সবুজ টিক মানে রোলটি আছে, "ব্লাফ" ট্যাগ মানে নেই।',
+    challengeTitle: 'ব্লাফ ধরুন',
+    challengeBody: 'কেউ রোল দাবি করলে আপনি চ্যালেঞ্জ করতে পারেন। চেষ্টা করুন — একজন প্রতিপক্ষ দাবি করল:',
+    challengeClaim: '{bot} {role} দাবি করে ৩ কয়েন নিতে চায়।',
+    challengeBtn: 'চ্যালেঞ্জ করুন',
+    passBtn: 'ছেড়ে দিন',
+    challengeWin: 'দারুণ — {bot} ব্লাফ করছিল এবং একটি কার্ড হারাল। তবে সত্য দাবিতে চ্যালেঞ্জ করলে আপনি কার্ড হারাবেন।',
+    passResult: 'আপনি ছেড়ে দিলেন। ব্লাফ ছেড়ে দেওয়া নিরাপদ হতে পারে — আবার প্রতিপক্ষকে এগিয়ে দিতেও পারে।',
+    readyTitle: 'আপনি প্রস্তুত',
+    readyBody: 'কয়েন জমান, ক্ষমতা দাবি করুন, ব্লাফ ধরুন, এবং শেষ পর্যন্ত টিকে থাকুন। "কিভাবে খেলবেন" থেকে আবার দেখতে পারবেন।',
   },
   bot: {
     personas: {
