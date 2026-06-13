@@ -13,29 +13,48 @@ const isPhone = (): boolean => {
   return coarsePointer && shortSide > 0 && shortSide <= PHONE_MAX_SHORT_SIDE;
 };
 
-const tryLockLandscape = (): void => {
-  const orientation = window.screen?.orientation as
-    | (ScreenOrientation & { lock?: (orientation: string) => Promise<void> })
+const orientationApi = () =>
+  window.screen?.orientation as
+    | (ScreenOrientation & { lock?: (orientation: string) => Promise<void>; unlock?: () => void })
     | undefined;
+
+const tryLockLandscape = (): void => {
   // Works on most Android browsers; unsupported on iOS Safari, where the CSS fallback covers it.
-  orientation?.lock?.('landscape').catch(() => {});
+  orientationApi()?.lock?.('landscape').catch(() => {});
+};
+
+const tryUnlock = (): void => {
+  try {
+    orientationApi()?.unlock?.();
+  } catch {
+    // ignore — not all browsers support unlock
+  }
 };
 
 /**
- * Gives phones a landscape game: requests a native orientation lock where supported
- * (Android — the real viewport rotates and the landscape board renders natively), and
- * otherwise rotates the app with CSS (iOS). When the CSS fallback is active it sets
+ * Gives phones a landscape game while `active` (a match is in progress): requests a native
+ * orientation lock where supported (Android — the real viewport rotates and the landscape
+ * board renders natively), and otherwise rotates the app with CSS (iOS), setting
  * `forcedLandscape` so the layout renders the landscape board on a portrait viewport.
- * No-op on tablets and desktops.
+ * Setup and menus stay upright. No-op on tablets and desktops.
  */
-export function useForceLandscape(): void {
+export function useForceLandscape(active: boolean): void {
   const setForcedLandscape = useGameStore((state) => state.setForcedLandscape);
 
   useEffect(() => {
-    if (!isPhone()) return undefined;
     const root = document.documentElement;
-    const portrait = window.matchMedia('(orientation: portrait)');
+    const clear = () => {
+      root.classList.remove('force-landscape');
+      setForcedLandscape(false);
+    };
 
+    if (!isPhone() || !active) {
+      clear();
+      tryUnlock();
+      return undefined;
+    }
+
+    const portrait = window.matchMedia('(orientation: portrait)');
     const sync = () => {
       // Still portrait after attempting the native lock => unsupported (iOS): CSS-rotate.
       const cssRotated = portrait.matches;
@@ -48,8 +67,8 @@ export function useForceLandscape(): void {
     portrait.addEventListener('change', sync);
     return () => {
       portrait.removeEventListener('change', sync);
-      root.classList.remove('force-landscape');
-      setForcedLandscape(false);
+      clear();
+      tryUnlock();
     };
-  }, [setForcedLandscape]);
+  }, [active, setForcedLandscape]);
 }

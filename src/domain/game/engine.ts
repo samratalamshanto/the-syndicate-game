@@ -43,6 +43,13 @@ const canPlayPrimary = (state: GameState, action: PrimaryGameAction): boolean =>
   return actor.money >= (primaryActionCost[action.type] ?? 0);
 };
 
+// A challenge/block reactor must be a different, still-alive player from the actor.
+const canReact = (state: GameState, actorId: string, reactorId: string): boolean => {
+  if (reactorId === actorId) return false;
+  const reactor = state.players.find((player) => player.id === reactorId);
+  return reactor !== undefined && !isEliminated(reactor);
+};
+
 export const createGame = (config: GameConfig, random: RandomSource = config.seed ? seededRandom(config.seed) : Math.random): GameState => {
   const deck = shuffle(createDeck(config), random);
   const players: Player[] = Array.from({ length: config.playerCount }, (_, index) => {
@@ -144,13 +151,21 @@ export const resolveAction = (state: GameState, action: GameAction, random: Rand
   // so a malformed reaction can never resolve its originalAction off-turn or for free.
   if (action.type === 'challenge') {
     const original = action.originalAction;
-    if (action.claimedRole !== requiredRoleForAction(original.type) || !canPlayPrimary(next, original)) {
+    if (
+      action.claimedRole !== requiredRoleForAction(original.type) ||
+      !canReact(next, action.actorId, action.challengerId) ||
+      !canPlayPrimary(next, original)
+    ) {
       return next;
     }
     applyChallengeAction(next, action, random);
   } else if (action.type === 'block') {
     const original = action.originalAction;
-    if (blockingRoles[original.type] !== action.blockingRole || !canPlayPrimary(next, original)) {
+    if (
+      blockingRoles[original.type] !== action.blockingRole ||
+      !canReact(next, action.actorId, action.blockerId) ||
+      !canPlayPrimary(next, original)
+    ) {
       return next;
     }
     const blocker = findPlayer(next, action.blockerId);

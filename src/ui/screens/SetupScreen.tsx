@@ -38,7 +38,7 @@ export const SetupScreen = () => {
   const unlockedCount = Object.keys(achievements.unlocked).length;
 
   return (
-    <section className="relative mx-auto grid w-full max-w-3xl flex-1 gap-6 py-6">
+    <section className="setup-screen relative mx-auto grid w-full max-w-3xl flex-1 gap-6 py-6">
       {/* HERO LEFT */}
       <div className="grid gap-6">
         <div className="grid gap-4">

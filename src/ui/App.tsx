@@ -13,7 +13,7 @@ export const App = () => {
   const t = translations[language];
   const achievementCopy = achievementToast ? t.achievements[achievementToast.id] : null;
 
-  useForceLandscape();
+  useForceLandscape(Boolean(game));
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');

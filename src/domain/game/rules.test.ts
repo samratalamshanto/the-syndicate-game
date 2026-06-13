@@ -210,6 +210,49 @@ describe('game engine', () => {
     expect(next.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(0);
   });
 
+  it('rejects a challenge from the actor against themselves', () => {
+    const state = riggedState();
+    const next = resolveAction(state, {
+      type: 'challenge',
+      actorId: 'player-1',
+      challengerId: 'player-1', // cannot challenge your own claim
+      claimedRole: 'officer',
+      originalAction: { type: 'attack', actorId: 'player-1', targetId: 'player-3' },
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[2].cards.filter((card) => card.status === 'alive')).toHaveLength(2);
+  });
+
+  it('rejects a challenge from an eliminated challenger', () => {
+    const state = riggedState();
+    state.players[1].cards.forEach((card) => {
+      card.status = 'revealed';
+    }); // player-2 is out
+    const next = resolveAction(state, {
+      type: 'challenge',
+      actorId: 'player-1',
+      challengerId: 'player-2',
+      claimedRole: 'officer',
+      originalAction: { type: 'attack', actorId: 'player-1', targetId: 'player-3' },
+    });
+
+    expect(next.pendingChoice).toBeNull();
+  });
+
+  it('rejects a block from the actor against themselves', () => {
+    const state = riggedState();
+    const next = resolveAction(state, {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-1', // cannot block your own action
+      blockingRole: 'leader',
+      originalAction: { type: 'fundRaise', actorId: 'player-1' },
+    });
+
+    expect(next.pendingChoice).toBeNull();
+  });
+
   it('punishes a bluffing actor when challenged', () => {
     const state = riggedState();
     state.players[0].cards = [

@@ -362,8 +362,26 @@ select {
 }
 
 .landscape-board .action-pad .action-choice {
-  min-height: 2.6rem;
+  min-height: 2.75rem;
   padding: 0.3rem 0.45rem;
+}
+
+/* Show full action names/notes on the short board instead of truncating them. */
+.landscape-board .action-pad .action-choice > span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.landscape-board .action-pad .action-choice > span:first-child {
+  font-size: 0.82rem;
+  line-height: 1.05;
+}
+
+.landscape-board .action-pad .action-choice > span:last-child {
+  margin-top: 0.1rem;
+  font-size: 0.62rem;
+  line-height: 1.05;
 }
 
 /* Trim the hand panel chrome so the action pad has room on the short board. */
@@ -394,6 +412,21 @@ select {
 
   .app-header .header-eyebrow {
     display: none;
+  }
+}
+
+/* On short viewports (landscape phones/tablets) compact the setup hero so the
+   Start control surfaces with little or no scrolling. */
+@media (max-height: 560px) {
+  .setup-screen {
+    gap: 0.85rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .setup-screen h2 {
+    font-size: 2.25rem;
+    line-height: 1.1;
   }
 }
 
