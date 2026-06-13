@@ -23,7 +23,7 @@ export const ChooseReplacementPrompt = ({ offered, onPick }: Props) => {
       size="sm"
     >
       <div className="grid gap-3 text-center">
-        <div className="flex justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
           {offered.map((card) => (
             <button
               key={card.id}
@@ -32,7 +32,7 @@ export const ChooseReplacementPrompt = ({ offered, onPick }: Props) => {
               className="rounded-2xl p-1 transition duration-150 hover:scale-95 focus:outline-none focus:ring-2 focus:ring-brass"
               aria-label={`${t.common.chooseReplacementTitle} ${t.roles[card.role].name}`}
             >
-              <GameCard variant="face" role={card.role} size="lg" />
+              <GameCard variant="face" role={card.role} size="sm" />
             </button>
           ))}
         </div>

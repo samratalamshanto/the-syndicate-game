@@ -309,31 +309,34 @@ describe('game engine', () => {
   });
 
   it('pauses for a human replacement choice after proving a challenged role', () => {
-    const next = resolveAction(riggedState(), {
-      type: 'challenge',
-      actorId: 'player-1',
-      challengerId: 'player-2',
-      claimedRole: 'leader',
-      originalAction: { type: 'tax', actorId: 'player-1' },
-    });
+    const next = resolveAction(
+      riggedState(),
+      {
+        type: 'challenge',
+        actorId: 'player-1',
+        challengerId: 'player-2',
+        claimedRole: 'leader',
+        originalAction: { type: 'tax', actorId: 'player-1' },
+      },
+      () => 0,
+    );
 
-    expect(next.pendingChoice).toMatchObject({
-      kind: 'replaceProvenCard',
-      playerId: 'player-1',
-      offered: [
-        { id: 'd1', role: 'leader', status: 'alive' },
-        { id: 'd2', role: 'officer', status: 'alive' },
-      ],
-      followUp: { type: 'tax', actorId: 'player-1' },
-    });
-    expect(next.players[0].cards.some((card) => card.id === 'd1')).toBe(false);
+    expect(next.pendingChoice?.kind).toBe('replaceProvenCard');
+    const pending = next.pendingChoice as Extract<typeof next.pendingChoice, { kind: 'replaceProvenCard' }>;
+    // One card of every distinct role in the deck — including the returned 'leader'.
+    expect([...pending.offered.map((card) => card.role)].sort()).toEqual(['leader', 'officer', 'reporter']);
+    expect(pending.followUp).toEqual({ type: 'tax', actorId: 'player-1' });
 
-    const afterChoice = resolveAction(next, { type: 'chooseReplacementCard', playerId: 'player-1', cardId: 'd2' });
+    const officerCard = pending.offered.find((card) => card.role === 'officer')!;
+    const afterChoice = resolveAction(
+      next,
+      { type: 'chooseReplacementCard', playerId: 'player-1', cardId: officerCard.id },
+      () => 0,
+    );
 
     expect(afterChoice.pendingChoice).toBeNull();
-    expect(afterChoice.players[0].cards.some((card) => card.id === 'd2')).toBe(true);
-    expect(afterChoice.deck.some((card) => card.id === 'c1')).toBe(true);
-    expect(afterChoice.players[0].money).toBe(10);
+    expect(afterChoice.players[0].cards.some((card) => card.role === 'officer')).toBe(true);
+    expect(afterChoice.players[0].money).toBe(10); // tax follow-up applied, capped at 10
     expect(afterChoice.currentPlayerId).toBe('player-2');
   });
 

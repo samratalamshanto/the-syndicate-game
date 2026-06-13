@@ -84,7 +84,8 @@ describe('MomentBanner', () => {
 
     render(<CardLossMoment event={event} onDone={onDone} />);
 
-    expect(screen.getByText(/Iron lost Minister/i)).toBeInTheDocument();
+    // The lost card returns to the deck face-down, so its role is not revealed.
+    expect(screen.getByText(/Iron lost a card/i)).toBeInTheDocument();
     vi.advanceTimersByTime(MOMENT_TIMING.normal);
     expect(onDone).toHaveBeenCalledWith(event.id);
   });

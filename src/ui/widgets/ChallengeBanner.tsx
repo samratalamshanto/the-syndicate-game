@@ -34,7 +34,7 @@ export const ChallengeBanner = ({ event, onDone }: Props) => {
       detail={detail}
       icon={<ShieldAlert size={22} />}
       tone={event.outcome === 'liar' ? 'alert' : 'success'}
-      className="z-[75]"
+      className="z-40"
     />
   );
 };

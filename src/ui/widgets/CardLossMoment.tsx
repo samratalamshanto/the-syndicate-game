@@ -18,9 +18,9 @@ export const CardLossMoment = ({ event, onDone }: Props) => {
     return null;
   }
 
-  const headline = event.role
-    ? formatMessage(t.common.cardLossMomentRole, { player: event.playerName, role: t.roles[event.role].name })
-    : formatMessage(t.common.cardLossMoment, { player: event.playerName });
+  // Attack/eliminate losses return the card to the deck face-down, so never reveal its
+  // role here — show a generic "lost a card" / "eliminated" line instead.
+  const headline = formatMessage(t.common.cardLossMoment, { player: event.playerName });
 
   return (
     <MomentBanner
@@ -29,7 +29,7 @@ export const CardLossMoment = ({ event, onDone }: Props) => {
       timeoutMs={MOMENT_TIMING.normal}
       headline={headline}
       tone={event.eliminated ? 'alert' : 'neutral'}
-      className="z-[79]"
+      className="z-40"
     >
       <div className="reveal-card relative h-40 w-28 overflow-hidden rounded-xl border-2 border-brass shadow-card">
         <div className={`absolute inset-0 ${theme === 'dark' ? 'card-back-pattern' : 'card-back-pattern-light'}`} />

@@ -33,7 +33,7 @@ export const MomentBanner = ({
   detail,
   icon,
   tone = 'neutral',
-  className = 'z-[75]',
+  className = 'z-40',
   children,
 }: MomentBannerProps) => {
   const style = toneStyle[tone];
@@ -45,8 +45,11 @@ export const MomentBanner = ({
 
   return (
     <div className={`pointer-events-none fixed inset-x-0 bottom-0 px-0 sm:bottom-auto sm:top-[24vh] sm:px-4 ${className}`}>
-      <div
-        className={`bottom-sheet surface-strong mx-auto grid w-full max-w-xl justify-items-center gap-3 rounded-t-2xl border-x border-b border-token px-5 pb-5 pt-4 shadow-card sm:rounded-2xl sm:px-6 ${
+      <button
+        type="button"
+        onClick={onDone}
+        aria-label="Dismiss"
+        className={`bottom-sheet surface-strong pointer-events-auto mx-auto grid w-full max-w-xl cursor-pointer justify-items-center gap-3 rounded-t-2xl border-x border-b border-token px-5 pb-5 pt-4 text-left shadow-card sm:rounded-2xl sm:px-6 ${
           tone === 'alert' ? 'banner-alert-pop' : ''
         }`}
         style={{ borderTop: `4px solid ${style.borderColor}` }}
@@ -57,7 +60,8 @@ export const MomentBanner = ({
           <p className="font-display text-2xl font-black leading-tight text-app">{headline}</p>
         </div>
         {detail ? <p className="max-w-md text-center text-sm font-medium leading-snug text-app-muted">{detail}</p> : null}
-      </div>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-app-muted">tap to dismiss</span>
+      </button>
     </div>
   );
 };
