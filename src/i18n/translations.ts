@@ -21,6 +21,7 @@ type Translation = {
     title: string;
     players: string;
     difficulty: string;
+    difficulties: Record<'easy' | 'medium' | 'hard', { label: string; tag: string }>;
     start: string;
   };
   common: {
@@ -225,6 +226,11 @@ const dailyEn: Translation = {
     title: 'Create Game',
     players: 'Players',
     difficulty: 'Bot level',
+    difficulties: {
+      easy: { label: 'Easy', tag: 'Forgiving · learn the ropes' },
+      medium: { label: 'Medium', tag: 'Balanced bluffs' },
+      hard: { label: 'Hard', tag: 'Sharper minds, riskier plays' },
+    },
     start: 'Start game',
   },
   common: {
@@ -520,6 +526,11 @@ const dailyBn: Translation = {
     title: 'গেম তৈরি করুন',
     players: 'প্লেয়ার',
     difficulty: 'বট লেভেল',
+    difficulties: {
+      easy: { label: 'সহজ', tag: 'ক্ষমাশীল · শিখে নিন' },
+      medium: { label: 'মাঝারি', tag: 'ভারসাম্যপূর্ণ ব্লাফ' },
+      hard: { label: 'কঠিন', tag: 'তীক্ষ্ণ বুদ্ধি, ঝুঁকির খেলা' },
+    },
     start: 'গেম শুরু',
   },
   common: {

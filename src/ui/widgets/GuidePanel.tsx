@@ -30,15 +30,15 @@ export const GuidePanel = ({ compact = false }: Props) => {
         <div className="mt-4 grid gap-3">
           <div className="grid gap-2 text-center text-xs font-bold sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center">
             <span className="inverse-button rounded-md px-2 py-2">
-              <span>1. </span><span>Action</span>
+              <span>1. </span><span>{t.common.phaseAction}</span>
             </span>
             <ArrowRight size={16} className="mx-auto hidden sm:block" />
             <span className="rounded-md bg-brass px-2 py-2 text-night">
-              <span>2. </span><span>Challenge</span>
+              <span>2. </span><span>{t.common.phaseChallenge}</span>
             </span>
             <ArrowRight size={16} className="mx-auto hidden sm:block" />
             <span className="inline-flex items-center justify-center gap-1 rounded-md bg-jade px-2 py-2 text-white">
-              <Trophy size={14} /> <span>3. </span><span>Resolve</span>
+              <Trophy size={14} /> <span>3. </span><span>{t.common.phaseResolve}</span>
             </span>
           </div>
           <div className="surface-muted rounded-xl border border-token-soft px-3 py-3 text-sm">
@@ -58,17 +58,17 @@ export const GuidePanel = ({ compact = false }: Props) => {
       <div className="mt-4 grid gap-3">
         <div className="grid gap-2 text-center text-xs font-bold sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center">
           <span className="inverse-button rounded-md px-2 py-2">
-            <span>1. </span><span>Action</span>
+            <span>1. </span><span>{t.common.phaseAction}</span>
           </span>
           <ArrowDown size={16} className="mx-auto sm:hidden" />
           <ArrowRight size={16} className="mx-auto hidden sm:block" />
           <span className="rounded-md bg-brass px-2 py-2 text-night">
-            <span>2. </span><span>Challenge</span>
+            <span>2. </span><span>{t.common.phaseChallenge}</span>
           </span>
           <ArrowDown size={16} className="mx-auto sm:hidden" />
           <ArrowRight size={16} className="mx-auto hidden sm:block" />
           <span className="inline-flex items-center justify-center gap-1 rounded-md bg-jade px-2 py-2 text-white">
-            <Trophy size={14} /> <span>3. </span><span>Resolve</span>
+            <Trophy size={14} /> <span>3. </span><span>{t.common.phaseResolve}</span>
           </span>
         </div>
 
