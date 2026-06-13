@@ -1044,10 +1044,10 @@ export const GameScreen = () => {
           }
         >
           {winner ? (
-            <div className="grid gap-3 text-center">
-              <p className="font-display text-2xl font-black tracking-wide gold-text">{series.length > 1 && series.matchOver ? seriesWinner?.name : winner.name}</p>
+            <div className={`grid text-center ${layoutMode === 'landscape' ? 'gap-2' : 'gap-3'}`}>
+              <p className={`font-display font-black tracking-wide gold-text ${layoutMode === 'landscape' ? 'text-lg' : 'text-2xl'}`}>{series.length > 1 && series.matchOver ? seriesWinner?.name : winner.name}</p>
               {summaryLines.length > 0 ? (
-                <div className="surface-muted grid gap-1 rounded-xl border border-token-soft px-4 py-3 text-left text-sm">
+                <div className={`surface-muted grid gap-1 rounded-xl border border-token-soft text-left ${layoutMode === 'landscape' ? 'px-3 py-2 text-xs' : 'px-4 py-3 text-sm'}`}>
                   <p className="modal-h2">{t.common.gameSummary}</p>
                   {summaryLines.map((line) => (
                     <p key={line}>{line}</p>
