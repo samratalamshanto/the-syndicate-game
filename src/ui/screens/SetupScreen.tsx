@@ -11,11 +11,7 @@ import type { BotDifficulty } from '../../domain/game/types';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { achievementIds } from '../../application/achievementRules';
 
-const difficulties: { value: BotDifficulty; label: string; tag: string }[] = [
-  { value: 'easy', label: 'Easy', tag: 'Forgiving · learn the ropes' },
-  { value: 'medium', label: 'Medium', tag: 'Balanced bluffs' },
-  { value: 'hard', label: 'Hard', tag: 'Sharper minds, riskier plays' },
-];
+const difficultyOrder: BotDifficulty[] = ['easy', 'medium', 'hard'];
 
 export const SetupScreen = () => {
   const {
@@ -30,6 +26,7 @@ export const SetupScreen = () => {
     resetProfile,
   } = useGameStore();
   const t = translations[language];
+  const difficulties = difficultyOrder.map((value) => ({ value, ...t.setup.difficulties[value] }));
   const [guideOpen, setGuideOpen] = useState(false);
 
   // First-run teaching: open the how-to-play once so new players see the objective,
