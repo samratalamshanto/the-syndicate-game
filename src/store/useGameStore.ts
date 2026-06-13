@@ -194,7 +194,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   game: savedGame,
   language: savedSettings?.language ?? 'en',
   theme: savedSettings?.theme ?? 'dark',
-  soundMuted: savedSettings?.soundMuted ?? true,
+  soundMuted: savedSettings?.soundMuted ?? false,
   series: defaultSeries(savedSettings?.seriesLength ?? 1),
   profile: savedProfileState,
   achievements: savedProfileState.achievements,

@@ -1,4 +1,4 @@
-import { BookOpen, Clock3, Eye, ScrollText, Sparkles, Trophy, X } from 'lucide-react';
+import { BookOpen, Clock3, Eye, ScrollText, ShieldCheck, Sparkles, Trophy, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getPlayerView, requiredRoleForAction } from '../../domain/game/engine';
 import type { ActionType, GameAction, PrimaryGameAction, RoleId } from '../../domain/game/types';
@@ -645,12 +645,25 @@ export const GameScreen = () => {
                 key={type}
                 type="button"
                 disabled={disabled}
-                aria-label={t.actions[type]}
+                aria-label={role && !humanRoles.includes(role) ? `${t.actions[type]} — ${t.common.bluffWarning}` : t.actions[type]}
                 onClick={() => chooseAction(type)}
-                className={`action-choice min-h-[4.25rem] rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-brass ${
+                className={`action-choice relative min-h-[4.25rem] rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-brass ${
                   disabled ? 'cursor-not-allowed opacity-60' : ''
                 }`}
               >
+                {/* Tell the player whether this role-claim action is truthful or a bluff. */}
+                {role ? (
+                  humanRoles.includes(role) ? (
+                    <ShieldCheck size={13} className="absolute right-1.5 top-1.5 text-success" aria-hidden="true" />
+                  ) : (
+                    <span
+                      className="absolute right-1.5 top-1.5 rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-700 dark:text-amber-400"
+                      aria-hidden="true"
+                    >
+                      {t.common.bluffTag}
+                    </span>
+                  )
+                ) : null}
                 <span className="block font-display text-base font-black leading-tight text-app sm:text-lg">
                   {label.title}
                 </span>

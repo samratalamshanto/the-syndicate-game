@@ -237,6 +237,51 @@ describe('game engine', () => {
     expect(next.pendingChoice).toBeNull();
   });
 
+  it('does not punish the attacker when their truthful Minister attack is challenged', () => {
+    // player-1 holds officer (Minister, c2); a wrong challenge must cost the challenger, not the attacker.
+    const state = riggedState();
+    const next = resolveAction(
+      state,
+      {
+        type: 'challenge',
+        actorId: 'player-1',
+        challengerId: 'player-2',
+        claimedRole: 'officer',
+        originalAction: { type: 'attack', actorId: 'player-1', targetId: 'player-3' },
+      },
+      () => 0,
+    );
+
+    // Attacker proved the role: the challenger lost a card and the attacker is picking a
+    // replacement (proven card briefly removed) — crucially, the attacker is NOT eliminated.
+    expect(next.players[1].cards.filter((c) => c.status === 'revealed')).toHaveLength(1);
+    expect(next.pendingChoice?.kind).toBe('replaceProvenCard');
+    expect(next.players[0].cards.filter((c) => c.status === 'alive').length).toBeGreaterThan(0);
+  });
+
+  it('punishes the bluffing attacker when challenged (why an attack can get you out)', () => {
+    // player-1 does NOT hold officer here, so a Minister attack is a bluff.
+    const state = riggedState();
+    state.players[0].cards = [
+      { id: 'c1', role: 'leader', status: 'alive' },
+      { id: 'c2', role: 'thief', status: 'revealed' }, // only one live card, and it's not officer
+    ];
+    const next = resolveAction(
+      state,
+      {
+        type: 'challenge',
+        actorId: 'player-1',
+        challengerId: 'player-2',
+        claimedRole: 'officer',
+        originalAction: { type: 'attack', actorId: 'player-1', targetId: 'player-3' },
+      },
+      () => 0,
+    );
+
+    // The bluffing attacker loses their last live card and is eliminated — expected, not a bug.
+    expect(next.players[0].cards.filter((c) => c.status === 'alive')).toHaveLength(0);
+  });
+
   it('rejects a challenge from the actor against themselves', () => {
     const state = riggedState();
     const next = resolveAction(state, {
