@@ -44,8 +44,8 @@
   --control-hover: #2c313b;
   --inverse: #f5f0e3;
   --inverse-on: #1a1d24;
-  --accent: #d4a548;
-  --accent-strong: #d4a548;
+  --accent: #e2b658;
+  --accent-strong: #e2b658;
   --alert: #e85a4f;
   --alert-on: #ffffff;
   --success: #4ab287;
@@ -801,9 +801,15 @@ html.force-landscape .app-header .header-eyebrow {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .felt-atmosphere,
-  .chip-drop-active {
-    animation: none;
+  /* Honor the user's request across the board: no looping/large motion, instant
+     transitions. Covers card deals, flips, pulses, shimmer, sweeps, shakes, etc. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

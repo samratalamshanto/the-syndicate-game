@@ -63,7 +63,7 @@ export const GameCard = (props: Props) => {
     return (
       <div className={`${frameClass} surface-strong overflow-hidden border border-token grayscale`} style={frameStyle}>
         <div className="absolute inset-x-0 top-0 h-1 bg-alert" />
-        <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-alert px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+        <span className="absolute right-1.5 top-1.5 z-10 rounded-full bg-alert px-1.5 py-0.5 text-[10px] font-black uppercase text-white">
           {t.common.revealed}
         </span>
         <div className="absolute inset-0 grid grid-rows-[1fr_auto] gap-1 p-2 text-center">

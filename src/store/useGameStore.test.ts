@@ -16,8 +16,8 @@ describe('useGameStore profile', () => {
     });
   });
 
-  it('defaults to light theme when localStorage has no saved setting', () => {
-    expect(useGameStore.getState().theme).toBe('light');
+  it('defaults to the dark theme when localStorage has no saved setting', () => {
+    expect(useGameStore.getState().theme).toBe('dark');
   });
 
   it('records a human win and unlocks untouchable when an action completes the match with no lost cards', () => {
