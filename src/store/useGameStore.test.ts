@@ -7,7 +7,7 @@ describe('useGameStore profile', () => {
     localStorage.clear();
     useGameStore.setState({
       game: null,
-      playerCount: 3,
+      playerCount: 4,
       botDifficulty: 'medium',
       profile: defaultProfile(),
       achievements: defaultProfile().achievements,

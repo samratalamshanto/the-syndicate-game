@@ -304,8 +304,11 @@ select {
 .landscape-board .board-top {
   grid-area: top;
   justify-self: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
-  max-width: 15rem;
+  max-width: 30rem;
 }
 
 .landscape-board .board-left {
@@ -346,11 +349,11 @@ select {
   padding: 0.45rem 0.6rem;
 }
 
-.landscape-board .action-pad > div:first-child {
+.landscape-board .action-pad .action-pad-header {
   margin-bottom: 0.3rem;
 }
 
-.landscape-board .action-pad > div:first-child > div:first-child {
+.landscape-board .action-pad .action-pad-heading {
   display: none;
 }
 

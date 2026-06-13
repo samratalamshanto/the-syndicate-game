@@ -405,6 +405,9 @@ export const GameScreen = () => {
   }
 
   // Landscape-phone board: human at the bottom (S), opponents at top (N), left (W), right (E).
+  // The top row is capped (it can only fit a couple of seats across); extra opponents
+  // are balanced onto the side columns so larger tables never overflow the board.
+  const LANDSCAPE_TOP_MAX = 3;
   const lbLeft: typeof opponents = [];
   const lbTop: typeof opponents = [];
   const lbRight: typeof opponents = [];
@@ -416,7 +419,11 @@ export const GameScreen = () => {
   } else {
     lbLeft.push(opponents[0]);
     lbRight.push(opponents[opponents.length - 1]);
-    lbTop.push(...opponents.slice(1, -1));
+    for (const opponent of opponents.slice(1, -1)) {
+      if (lbTop.length < LANDSCAPE_TOP_MAX) lbTop.push(opponent);
+      else if (lbLeft.length <= lbRight.length) lbLeft.push(opponent);
+      else lbRight.push(opponent);
+    }
   }
 
   const currentBotThinking = botTurn.phase === 'thinking' && botTurn.actorId === current.id;
@@ -568,8 +575,8 @@ export const GameScreen = () => {
   };
   const actionDecisionPad = isHumanTurn ? (
     <div className="action-pad mx-auto w-full max-w-5xl rounded-2xl border px-3 py-3 sm:px-4 sm:py-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+      <div className="action-pad-header mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="action-pad-heading flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
           <p className="text-[10px] font-black uppercase tracking-[0.22em] text-brass">{t.common.yourTurn}</p>
           <h3 className="font-display text-base font-black leading-tight text-app sm:text-lg">
             {pendingAction ? t.common.chooseTarget : t.common.actionPanelTitle}
@@ -667,14 +674,12 @@ export const GameScreen = () => {
       isThinking={currentBotThinking && p.id === game.currentPlayerId}
       isShaking={p.id === shakingTargetId}
       flavorLine={flavorLineFor(p.id)}
-      density="compact"
       variant="felt"
       mini
       coinRef={(node) => {
         coinRefs.current[p.id] = node;
       }}
       onSelectTarget={chooseTarget}
-      compact
     />
   );
 

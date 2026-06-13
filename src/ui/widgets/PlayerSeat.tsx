@@ -10,7 +10,6 @@ type Props = {
   player: PlayerSummaryView;
   isActive?: boolean;
   isTargetable?: boolean;
-  hasNoFunds?: boolean;
   isThinking?: boolean;
   isShaking?: boolean;
   flavorLine?: string | null;
@@ -28,7 +27,6 @@ export const PlayerSeat = ({
   player,
   isActive = false,
   isTargetable = false,
-  hasNoFunds = false,
   isThinking = false,
   isShaking = false,
   flavorLine = null,
@@ -103,7 +101,7 @@ export const PlayerSeat = ({
           </span>
           <div className="min-w-0 leading-tight">
             <p className={`max-w-full truncate rounded-full px-2 py-0.5 font-display font-black ${isActive && !player.isEliminated ? 'bg-brass text-night' : ''} ${isFelt ? 'text-xs' : 'text-sm'}`}>{player.name}</p>
-            {density === 'compact' || isPhone ? null : (
+            {density === 'compact' || isPhone || mini ? null : (
               <p className="text-app-muted text-[10px] uppercase tracking-widest">
                 {isHuman ? 'You' : persona ? t.bot.style[persona.style] : 'Bot'}
                 {player.isEliminated ? ' · out' : ''}
@@ -153,11 +151,6 @@ export const PlayerSeat = ({
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-alert px-2 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-chipDanger">
           <Target size={11} />
           {t.common.chooseTarget}
-        </div>
-      ) : null}
-      {canSelect && hasNoFunds ? (
-        <div className="surface-control absolute -top-3 right-3 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-app-muted">
-          {t.common.noFunds}
         </div>
       ) : null}
       {isThinking && !player.isEliminated ? (
