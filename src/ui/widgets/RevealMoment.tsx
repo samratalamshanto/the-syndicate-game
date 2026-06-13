@@ -36,7 +36,7 @@ export const RevealMoment = ({ event, onDone }: Props) => {
       detail={detail}
       icon={event.eliminated ? <Skull size={22} /> : undefined}
       tone={event.eliminated ? 'alert' : 'reveal'}
-      className="z-[80]"
+      className="z-40"
     >
       <div className="reveal-card">
         <GameCard variant="face" role={event.role} size="lg" />

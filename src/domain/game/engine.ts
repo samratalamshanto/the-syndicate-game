@@ -384,8 +384,24 @@ const requestReplacementCard = (
     return false;
   }
   actor.cards.splice(cardIndex, 1);
-  const offered = state.deck.splice(0, Math.min(2, state.deck.length));
+  // Return the proven card to the deck, then offer one card of every distinct role
+  // currently in the deck (including cards returned from earlier attacks/eliminations),
+  // so the winner genuinely chooses their new role instead of getting an auto-draw.
   insertRandom(state.deck, { ...provenCard, status: 'alive' }, random);
+  const seenRoles = new Set<RoleId>();
+  const offered: CharacterCard[] = [];
+  for (const card of state.deck) {
+    if (!seenRoles.has(card.role)) {
+      seenRoles.add(card.role);
+      offered.push(card);
+    }
+  }
+  for (const card of offered) {
+    const index = state.deck.findIndex((deckCard) => deckCard.id === card.id);
+    if (index >= 0) {
+      state.deck.splice(index, 1);
+    }
+  }
   state.pendingChoice = { kind: 'replaceProvenCard', playerId: actor.id, offered, followUp };
   return true;
 };

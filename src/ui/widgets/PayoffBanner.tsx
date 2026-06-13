@@ -49,7 +49,7 @@ export const PayoffBanner = ({ event, onDone }: Props) => {
       detail={content.detail}
       icon={content.icon}
       tone={content.tone}
-      className="z-[85]"
+      className="z-40"
     />
   );
 };

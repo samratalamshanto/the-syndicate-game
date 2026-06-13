@@ -154,11 +154,11 @@ export const PlayerSeat = ({
         </div>
       ) : null}
       {isThinking && !player.isEliminated ? (
-        <div className="surface-strong absolute -bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full border px-2 py-1 text-xs font-black">
+        <div className="surface-strong absolute -bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full border border-[var(--success)] px-2 py-1 text-xs font-black text-success">
           <span>{player.name} {t.common.thinking}</span>
-          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brass" />
-          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brass" />
-          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-brass" />
+          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
+          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
+          <span className="thinking-dot h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
         </div>
       ) : null}
       {isActive && !player.isEliminated ? (

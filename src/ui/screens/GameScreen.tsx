@@ -1043,7 +1043,7 @@ export const GameScreen = () => {
 
       {/* === ACTION HAND === */}
       {layoutMode !== 'landscape' && !counterChallengeChoice && !reactPromptActive && !isHumanTurn && !isComplete ? (
-        <div className="surface-strong rounded-xl border px-4 py-2 text-center font-display text-sm font-black">
+        <div className="surface-strong rounded-xl border border-[var(--success)] px-4 py-2 text-center font-display text-sm font-black text-success">
           {current.name} {t.common.thinking}...
           <span className="sr-only">Bot 1 thinking</span>
           <h3 className="sr-only">{t.common.actionPanelTitle}</h3>
