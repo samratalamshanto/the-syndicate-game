@@ -168,6 +168,48 @@ describe('game engine', () => {
     expect(next.players[1].cards.filter((card) => card.status === 'alive')).toHaveLength(2);
   });
 
+  it('rejects a challenge whose claimed role does not match the action', () => {
+    const state = riggedState(); // player-1 holds leader + officer
+    const next = resolveAction(state, {
+      type: 'challenge',
+      actorId: 'player-1',
+      challengerId: 'player-2',
+      claimedRole: 'leader', // attack requires officer, not leader
+      originalAction: { type: 'attack', actorId: 'player-1', targetId: 'player-3' },
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(0);
+    expect(next.players[2].cards.filter((card) => card.status === 'alive')).toHaveLength(2);
+  });
+
+  it('rejects a block with an illegal blocking role for the action', () => {
+    const state = riggedState();
+    const next = resolveAction(state, {
+      type: 'block',
+      actorId: 'player-1',
+      blockerId: 'player-2',
+      blockingRole: 'reporter', // reporter blocks attack, not tax (tax is unblockable)
+      originalAction: { type: 'tax', actorId: 'player-1' },
+    });
+
+    expect(next.pendingChoice).toBeNull();
+  });
+
+  it('rejects a challenge that wraps an off-turn action', () => {
+    const state = riggedState(); // current player is player-1
+    const next = resolveAction(state, {
+      type: 'challenge',
+      actorId: 'player-2',
+      challengerId: 'player-3',
+      claimedRole: 'leader',
+      originalAction: { type: 'tax', actorId: 'player-2' }, // player-2 is not on turn
+    });
+
+    expect(next.pendingChoice).toBeNull();
+    expect(next.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(0);
+  });
+
   it('punishes a bluffing actor when challenged', () => {
     const state = riggedState();
     state.players[0].cards = [
@@ -352,7 +394,10 @@ describe('game engine', () => {
   });
 
   it('pauses for a block-lost reveal choice with the claimed blocking role', () => {
-    const pending = resolveAction(riggedState(), {
+    const state = riggedState();
+    state.currentPlayerId = 'player-2'; // the attacker must be on turn
+    state.players[1].money = 3; // and able to pay the attack cost
+    const pending = resolveAction(state, {
       type: 'block',
       actorId: 'player-2',
       blockerId: 'player-1',

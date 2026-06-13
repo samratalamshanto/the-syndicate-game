@@ -26,7 +26,22 @@ const primaryActionCost: Partial<Record<GameAction['type'], number>> = {
   eliminate: 7,
 };
 
+// Which claimed role may block which action.
+const blockingRoles: Partial<Record<GameAction['type'], RoleId>> = {
+  fundRaise: 'leader',
+  steal: 'helper',
+  attack: 'reporter',
+};
+
 export const requiredRoleForAction = (actionType: GameAction['type']) => actionRoles[actionType] ?? null;
+
+// A primary action may run only from the on-turn, non-eliminated actor who can pay its cost.
+const canPlayPrimary = (state: GameState, action: PrimaryGameAction): boolean => {
+  if (action.actorId !== state.currentPlayerId) return false;
+  const actor = state.players.find((player) => player.id === action.actorId);
+  if (!actor || isEliminated(actor)) return false;
+  return actor.money >= (primaryActionCost[action.type] ?? 0);
+};
 
 export const createGame = (config: GameConfig, random: RandomSource = config.seed ? seededRandom(config.seed) : Math.random): GameState => {
   const deck = shuffle(createDeck(config), random);
@@ -124,31 +139,33 @@ export const resolveAction = (state: GameState, action: GameAction, random: Rand
     return next;
   }
 
-  // Primary actions (not challenge/block reactions) must come from the player on turn
-  // and the actor must be able to pay the cost; reject invalid callers as a no-op.
-  if (action.type !== 'challenge' && action.type !== 'block') {
-    if (action.actorId !== next.currentPlayerId) {
-      return next;
-    }
-    const cost = primaryActionCost[action.type] ?? 0;
-    if (actor.money < cost) {
-      return next;
-    }
-  }
-
+  // A primary action is legitimate only from the on-turn, non-eliminated actor who can
+  // pay its cost. Challenge/block reactions are validated against the action they wrap,
+  // so a malformed reaction can never resolve its originalAction off-turn or for free.
   if (action.type === 'challenge') {
+    const original = action.originalAction;
+    if (action.claimedRole !== requiredRoleForAction(original.type) || !canPlayPrimary(next, original)) {
+      return next;
+    }
     applyChallengeAction(next, action, random);
   } else if (action.type === 'block') {
+    const original = action.originalAction;
+    if (blockingRoles[original.type] !== action.blockingRole || !canPlayPrimary(next, original)) {
+      return next;
+    }
     const blocker = findPlayer(next, action.blockerId);
-    const originalActor = findPlayer(next, action.originalAction.actorId);
+    const originalActor = findPlayer(next, original.actorId);
     next.pendingChoice = {
       kind: 'counterChallenge',
       playerId: originalActor.id,
       blockerId: blocker.id,
       blockingRole: action.blockingRole,
-      originalAction: action.originalAction,
+      originalAction: original,
     };
   } else {
+    if (!canPlayPrimary(next, action)) {
+      return next;
+    }
     applyPrimaryAction(next, action, random);
   }
 
