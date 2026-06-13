@@ -18,7 +18,7 @@ type Props = {
 const highlightStyle: Record<NonNullable<Props['highlight']>, string> = {
   turn: 'border-brass/55',
   target: 'border-ember/60',
-  thinking: 'border-token',
+  thinking: 'thinking-surface',
   winner: 'border-emerald-400/70',
 };
 

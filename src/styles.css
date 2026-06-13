@@ -114,6 +114,33 @@ select {
   background: var(--surface-muted);
 }
 
+/* Attractive "thinking" surface: soft green glass + glow, used for the
+   bot-thinking badge, the bottom strip, and the table-center prompt. */
+.thinking-surface {
+  border-color: color-mix(in srgb, var(--success) 55%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--success) 20%, var(--surface)), var(--surface) 70%);
+  color: var(--on-app);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--success) 28%, transparent),
+    0 8px 22px color-mix(in srgb, var(--success) 24%, transparent);
+  animation: thinkingGlow 1800ms ease-in-out infinite;
+}
+
+@keyframes thinkingGlow {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--success) 28%, transparent),
+      0 8px 22px color-mix(in srgb, var(--success) 20%, transparent);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--success) 45%, transparent),
+      0 10px 28px color-mix(in srgb, var(--success) 38%, transparent);
+  }
+}
+
 .action-pad {
   border-color: var(--accent);
   background: var(--surface);
@@ -452,6 +479,52 @@ select {
   .setup-tagline,
   .setup-stats {
     display: none;
+  }
+
+  /* Compact modals/bottom-sheets so they fit a short landscape screen and are not
+     oversized. Targets the shared Modal chrome plus the in-modal type scale. */
+  [role='dialog'] {
+    max-height: 90dvh;
+  }
+
+  [role='dialog'] > div:first-child {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  [role='dialog'] > div:last-child {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  [role='dialog'] .modal-body {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  [role='dialog'] .modal-h1 {
+    font-size: 1.05rem;
+  }
+
+  [role='dialog'] .modal-h2 {
+    font-size: 0.9rem;
+  }
+
+  /* Shrink large display text and chips that the guide/prompts render inside the body. */
+  [role='dialog'] .modal-body h2 {
+    font-size: 1rem;
+  }
+
+  [role='dialog'] .modal-body .text-lg,
+  [role='dialog'] .modal-body .text-xl {
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+
+  /* Shrink the role cards the choice prompts render so they fit a short modal. */
+  [role='dialog'] .modal-body [class*='aspect-'] {
+    width: 4rem;
   }
 }
 
