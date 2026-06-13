@@ -35,12 +35,19 @@ const blockingRoles: Partial<Record<GameAction['type'], RoleId>> = {
 
 export const requiredRoleForAction = (actionType: GameAction['type']) => actionRoles[actionType] ?? null;
 
-// A primary action may run only from the on-turn, non-eliminated actor who can pay its cost.
+// A primary action may run only from the on-turn, non-eliminated actor who can pay its
+// cost, and (for targeted actions) against a different, still-alive player.
 const canPlayPrimary = (state: GameState, action: PrimaryGameAction): boolean => {
   if (action.actorId !== state.currentPlayerId) return false;
   const actor = state.players.find((player) => player.id === action.actorId);
   if (!actor || isEliminated(actor)) return false;
-  return actor.money >= (primaryActionCost[action.type] ?? 0);
+  if (actor.money < (primaryActionCost[action.type] ?? 0)) return false;
+  if ('targetId' in action) {
+    if (action.targetId === action.actorId) return false;
+    const target = state.players.find((player) => player.id === action.targetId);
+    if (!target || isEliminated(target)) return false;
+  }
+  return true;
 };
 
 // A challenge/block reactor must be a different, still-alive player from the actor.

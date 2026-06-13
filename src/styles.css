@@ -362,8 +362,8 @@ select {
 }
 
 .landscape-board .action-pad .action-choice {
-  min-height: 2.5rem;
-  padding: 0.25rem 0.45rem;
+  min-height: 2.1rem;
+  padding: 0.2rem 0.4rem;
 }
 
 /* Tighten the around-the-table seats so the action pad keeps its room on tiny screens. */
@@ -382,14 +382,14 @@ select {
 }
 
 .landscape-board .action-pad .action-choice > span:first-child {
-  font-size: 0.82rem;
-  line-height: 1.05;
+  font-size: 0.74rem;
+  line-height: 1.2;
 }
 
 .landscape-board .action-pad .action-choice > span:last-child {
-  margin-top: 0.1rem;
-  font-size: 0.62rem;
-  line-height: 1.05;
+  margin-top: 0.05rem;
+  font-size: 0.56rem;
+  line-height: 1.2;
 }
 
 /* Trim the hand panel chrome so the action pad has room on the short board. */

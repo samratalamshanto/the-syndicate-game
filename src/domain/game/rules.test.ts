@@ -210,6 +210,33 @@ describe('game engine', () => {
     expect(next.players[1].cards.filter((card) => card.status === 'revealed')).toHaveLength(0);
   });
 
+  it('rejects a steal that targets the actor themselves', () => {
+    const state = riggedState();
+    const next = resolveAction(state, { type: 'steal', actorId: 'player-1', targetId: 'player-1' });
+
+    expect(next.players[0].money).toBe(9); // unchanged — no self-steal
+    expect(next.pendingChoice).toBeNull();
+  });
+
+  it('rejects an attack on an already-eliminated target', () => {
+    const state = riggedState();
+    state.players[1].cards.forEach((card) => {
+      card.status = 'revealed';
+    }); // player-2 is out
+    const next = resolveAction(state, { type: 'attack', actorId: 'player-1', targetId: 'player-2' });
+
+    expect(next.players[0].money).toBe(9); // attack cost not spent
+    expect(next.pendingChoice).toBeNull();
+  });
+
+  it('rejects a targeted action against a non-existent player', () => {
+    const state = riggedState();
+    const next = resolveAction(state, { type: 'eliminate', actorId: 'player-1', targetId: 'nobody' });
+
+    expect(next.players[0].money).toBe(9);
+    expect(next.pendingChoice).toBeNull();
+  });
+
   it('rejects a challenge from the actor against themselves', () => {
     const state = riggedState();
     const next = resolveAction(state, {

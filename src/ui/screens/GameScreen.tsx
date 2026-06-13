@@ -49,12 +49,12 @@ const actionCosts: Record<ActionType, number> = {
 };
 const compactActionText = (type: ActionType, t: (typeof translations)['en']) => {
   if (type === 'income') return { title: t.actions.income, note: '+1 · safe' };
-  if (type === 'fundRaise') return { title: t.actions.fundRaise.includes(':') ? t.actions.fundRaise.split(':').at(-1)?.trim() ?? t.actions.fundRaise : t.actions.fundRaise, note: '+2 · blockable' };
+  if (type === 'fundRaise') return { title: t.actions.fundRaise.includes(':') ? t.actions.fundRaise.split(':').at(-1)?.trim() ?? t.actions.fundRaise : t.actions.fundRaise, note: '+2 · block' };
   if (type === 'tax') return { title: t.roles.leader.name, note: '+3' };
-  if (type === 'exchange') return { title: t.roles.helper.name, note: 'exchange cards' };
+  if (type === 'exchange') return { title: t.roles.helper.name, note: 'exchange' };
   if (type === 'steal') return { title: t.roles.thief.name, note: 'steal 2' };
   if (type === 'attack') return { title: t.roles.officer.name, note: 'pay 3' };
-  return { title: t.actions.eliminate, note: 'pay 7' };
+  return { title: t.actions.eliminate.split(':')[0].trim(), note: 'pay 7' };
 };
 export const BOT_TIMING = {
   thinkingMs: 1400,
