@@ -1,12 +1,20 @@
-import type { Language } from '../i18n/translations';
+import { translations, type Language } from '../i18n/translations';
 
 export type RuleSection = {
   title: string;
   lines: string[];
 };
 
-export const rulesContent = (language: Language): RuleSection[] =>
-  language === 'bn'
+export const rulesContent = (language: Language): RuleSection[] => {
+  // Use the active brand's role names so the rules always match the in-game labels.
+  const roles = translations[language].roles;
+  const leader = roles.leader.name;
+  const officer = roles.officer.name;
+  const thief = roles.thief.name;
+  const helper = roles.helper.name;
+  const reporter = roles.reporter.name;
+
+  return language === 'bn'
     ? [
         {
           title: 'মূল লক্ষ্য',
@@ -27,11 +35,11 @@ export const rulesContent = (language: Language): RuleSection[] =>
           title: 'অ্যাকশন ও খরচ',
           lines: [
             'Take 1: +১ কয়েন। নিরাপদ — দাবি লাগে না, ব্লক করা যায় না।',
-            'Take 2: +২ কয়েন। দাবিকৃত Leader এটি ব্লক করতে পারে।',
-            'Tax (Leader): +৩ কয়েন।',
-            'Steal (Thief): টার্গেট থেকে সর্বোচ্চ ২ কয়েন নিন। দাবিকৃত Helper ব্লক করতে পারে।',
-            'Exchange (Helper): দুটি কার্ড টেনে সেরাটি রাখুন।',
-            'Attack (Police): ৩ কয়েন দিয়ে টার্গেটের একটি কার্ড নষ্ট করুন। দাবিকৃত Reporter ব্লক করতে পারে।',
+            `Take 2: +২ কয়েন। দাবিকৃত ${leader} এটি ব্লক করতে পারে।`,
+            `${leader} (Tax): +৩ কয়েন।`,
+            `${thief} (Steal): টার্গেট থেকে সর্বোচ্চ ২ কয়েন নিন। দাবিকৃত ${helper} ব্লক করতে পারে।`,
+            `${helper} (Exchange): দুটি কার্ড টেনে সেরাটি রাখুন।`,
+            `${officer} (Attack): ৩ কয়েন দিয়ে টার্গেটের একটি কার্ড নষ্ট করুন। দাবিকৃত ${reporter} ব্লক করতে পারে।`,
             'Eliminate: ৭ কয়েন দিয়ে টার্গেটের একটি কার্ড নষ্ট করুন। ব্লক করা যায় না।',
           ],
         },
@@ -39,15 +47,15 @@ export const rulesContent = (language: Language): RuleSection[] =>
           title: 'ব্লক ও প্রতিক্রিয়া',
           lines: [
             'অ্যাকশন ঘোষণার পর প্রতিপক্ষরা অল্প সময়ের মধ্যে দাবি চ্যালেঞ্জ বা ব্লক করতে পারে।',
-            'Leader → Take 2 ব্লক করে, Helper → Steal ব্লক করে, Reporter → Attack ব্লক করে। ব্লককেও চ্যালেঞ্জ করা যায়।',
+            `${leader} → Take 2 ব্লক করে, ${helper} → Steal ব্লক করে, ${reporter} → Attack ব্লক করে। ব্লককেও চ্যালেঞ্জ করা যায়।`,
             'চ্যালেঞ্জে হারানো কার্ড প্রকাশ্যে দেখানো হয়; Attack ও Eliminate-এ হারানো কার্ড গোপনে ডেকে ফেরত যায়।',
           ],
         },
         {
           title: 'উদাহরণ',
           lines: [
-            'আপনি CEO দাবি করলেন। বট চ্যালেঞ্জ করল। আপনার CEO সত্য হলে বট একটি কার্ড হারাবে, তারপর আপনি CEO কার্ড ডেকে ফেরত দিয়ে নতুন কার্ড বেছে নেবেন।',
-            'আপনি Minister আক্রমণ চ্যালেঞ্জ করে ভুল হলে, চ্যালেঞ্জের জন্য একটি কার্ড হারাবেন এবং আক্রমণের জন্য আরেকটি কার্ড ঝুঁকিতে যাবে।',
+            `আপনি ${leader} দাবি করলেন। বট চ্যালেঞ্জ করল। আপনার ${leader} সত্য হলে বট একটি কার্ড হারাবে, তারপর আপনি ${leader} কার্ড ডেকে ফেরত দিয়ে নতুন কার্ড বেছে নেবেন।`,
+            `আপনি ${officer} আক্রমণ চ্যালেঞ্জ করে ভুল হলে, চ্যালেঞ্জের জন্য একটি কার্ড হারাবেন এবং আক্রমণের জন্য আরেকটি কার্ড ঝুঁকিতে যাবে।`,
           ],
         },
       ]
@@ -71,11 +79,11 @@ export const rulesContent = (language: Language): RuleSection[] =>
           title: 'Actions & Costs',
           lines: [
             'Take 1: +1 coin. Safe — no claim, cannot be blocked.',
-            'Take 2: +2 coins. A claimed Leader can block it.',
-            'Tax (Leader): +3 coins.',
-            'Steal (Thief): take up to 2 coins from a target. A claimed Helper can block it.',
-            'Exchange (Helper): draw two cards and keep the best.',
-            'Attack (Police): pay 3 to make a target lose a card. A claimed Reporter can block it.',
+            `Take 2: +2 coins. A claimed ${leader} can block it.`,
+            `${leader} (Tax): +3 coins.`,
+            `${thief} (Steal): take up to 2 coins from a target. A claimed ${helper} can block it.`,
+            `${helper} (Exchange): draw two cards and keep the best.`,
+            `${officer} (Attack): pay 3 to make a target lose a card. A claimed ${reporter} can block it.`,
             'Eliminate: pay 7 to make a target lose a card. Cannot be blocked.',
           ],
         },
@@ -83,18 +91,19 @@ export const rulesContent = (language: Language): RuleSection[] =>
           title: 'Blocks & Reactions',
           lines: [
             'After an action is announced, opponents get a short window to challenge the claim or block it.',
-            'Leader blocks Take 2, Helper blocks Steal, Reporter blocks Attack. A block can itself be challenged.',
+            `${leader} blocks Take 2, ${helper} blocks Steal, ${reporter} blocks Attack. A block can itself be challenged.`,
             'Challenge losses are revealed publicly; Attack and Eliminate losses are returned to the deck face down.',
           ],
         },
         {
           title: 'Examples',
           lines: [
-            'You claim CEO. A bot challenges. If your CEO is real, the bot loses one card, then you return CEO to the deck and choose a replacement.',
-            'If you wrongly challenge a Minister attack, you lose one card for the failed challenge and another card is at risk from the attack.',
+            `You claim ${leader}. A bot challenges. If your ${leader} is real, the bot loses one card, then you return ${leader} to the deck and choose a replacement.`,
+            `If you wrongly challenge a ${officer} attack, you lose one card for the failed challenge and another card is at risk from the attack.`,
           ],
         },
       ];
+};
 
 const imageBytesFromDataUrl = (dataUrl: string) => {
   const base64 = dataUrl.split(',')[1] ?? '';
